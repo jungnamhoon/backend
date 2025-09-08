@@ -1,0 +1,120 @@
+package com.hkorea.skyisthelimit.common.security.config;
+
+import static org.springframework.security.config.Customizer.withDefaults;
+
+import com.hkorea.skyisthelimit.common.security.CustomAuthenticationEntryPoint;
+import com.hkorea.skyisthelimit.common.security.filter.JsonLoginFilter;
+import com.hkorea.skyisthelimit.common.security.service.CustomUserDetailsService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+
+@Configuration
+@EnableWebSecurity
+public class AuthSecurityConfig {
+
+  @Bean
+  @Order(1)
+  public SecurityFilterChain authFilterChain(HttpSecurity http)
+      throws Exception {
+
+    OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = OAuth2AuthorizationServerConfigurer.authorizationServer()
+        .oidc(withDefaults());
+
+    http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
+        .with(authorizationServerConfigurer, withDefaults())
+        .authorizeHttpRequests((authorize) -> authorize
+            .anyRequest().authenticated())
+        .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
+            new LoginUrlAuthenticationEntryPoint("/login"),
+            new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
+
+    http.
+        sessionManagement(session -> session.
+            sessionFixation().migrateSession());
+
+    return http.build();
+  }
+
+  /*
+      1. /auth/login
+      2. /auth/signup
+      3. /auth/token
+   */
+  @Bean
+  @Order(2)
+  public SecurityFilterChain jsonAuthFilterChain(HttpSecurity http,
+      AuthenticationManager authenticationManager,
+      CustomAuthenticationEntryPoint customAuthenticationEntryPoint)
+      throws Exception {
+
+    JsonLoginFilter jsonLoginFilter = new JsonLoginFilter(authenticationManager);
+
+    http.securityMatcher("auth/**").csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(
+            auth -> auth.requestMatchers("/auth/token").authenticated().anyRequest().permitAll())
+        .addFilterAt(jsonLoginFilter, UsernamePasswordAuthenticationFilter.class)
+        .exceptionHandling(
+            exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint));
+
+    http.
+        sessionManagement(session -> session.
+            sessionFixation().migrateSession());
+
+    return http.build();
+  }
+
+  /*
+      1. /login
+      2. /signup
+   */
+  @Bean
+  @Order(3)
+  public SecurityFilterChain formAuthFilterChain(HttpSecurity http) throws Exception {
+    http.securityMatcher("/login", "/signup")
+        .formLogin(form -> form
+            .loginPage("/login")
+        )
+        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+
+    http.
+        sessionManagement(session -> session.
+            sessionFixation().migrateSession());
+
+    return http.build();
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(
+      CustomUserDetailsService customUserDetailsService,
+      BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setUserDetailsService(customUserDetailsService);
+    provider.setPasswordEncoder(bCryptPasswordEncoder);
+    return new ProviderManager(provider);
+  }
+
+  @Bean
+  public BCryptPasswordEncoder bCryptPasswordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  public AuthorizationServerSettings authorizationServerSettings() {
+    return AuthorizationServerSettings.builder().build();
+  }
+
+}
