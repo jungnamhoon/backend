@@ -7,7 +7,6 @@ import com.hkorea.skyisthelimit.dto.study.response.StudySummaryResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyUpdateResponse;
 import com.hkorea.skyisthelimit.entity.MemberStudy;
 import com.hkorea.skyisthelimit.entity.Study;
-import com.hkorea.skyisthelimit.entity.StudyProblem;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,8 +47,7 @@ public class StudyMapper {
         .build();
   }
 
-  public static StudyInfoResponse toStudyInfoResponse(Study study, Set<MemberStudy> memberStudies,
-      List<StudyProblem> studyProblemList) {
+  public static StudyInfoResponse toStudyInfoResponse(Study study, Set<MemberStudy> memberStudies) {
 
     List<DailyProblemCreateResponse> dailyProblems = study.getDailyProblems().stream()
         .map(StudyProblemMapper::toDailyProblemCreateResponse)

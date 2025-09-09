@@ -76,6 +76,8 @@ public class StudyService {
 
     List<StudyProblem> studyProblemListSolvedByAll = getStudyProblemListSolvedByAll(studyId);
     studyProblemListSolvedByAll.forEach(StudyProblem::markToSolved);
+    int newSolvedCount = studyProblemListSolvedByAll.size();
+    study.incrementTotalSolvedProblemsCount(newSolvedCount);
 
     Set<MemberStudy> memberStudiesNotSolvingDailyProblems = getMemberStudiesNotSolvingDailyProblems(
         studyId);
@@ -86,8 +88,7 @@ public class StudyService {
 
     return StudyMapper.toStudyInfoResponse(
         study,
-        memberStudiesNotSolvingDailyProblems,
-        studyProblemListSolvedByAll);
+        memberStudiesNotSolvingDailyProblems);
   }
 
   @Transactional

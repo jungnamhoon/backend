@@ -173,6 +173,10 @@ public class Study {
         .toList();
   }
 
+  public void incrementTotalSolvedProblemsCount(int solvedCount) {
+    this.totalSolvedProblemsCount += solvedCount;
+  }
+
   private void incrementStreak() {
     this.streak++;
   }
