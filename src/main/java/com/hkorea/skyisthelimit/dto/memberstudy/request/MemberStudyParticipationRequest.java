@@ -9,7 +9,7 @@ public class MemberStudyParticipationRequest {
 
   @Schema(
       description = "스터디 참가 요청 상태",
-      example = "ACCEPTED",
+      example = "APPROVED",
       allowableValues = {"PENDING", "APPROVED", "REJECTED"}
   )
   private MemberStudyStatus requestStatus;
