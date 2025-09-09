@@ -42,7 +42,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: southernlight3816
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       # 7️⃣ Docker 이미지 빌드 및 태그
       - name: Build and tag Docker image
@@ -62,9 +62,16 @@ jobs:
           password: ${{ secrets.VULTR_PASSWORD }}
           script: |
             
-            # 9️⃣-1️⃣ Docker Hub 로그인
+            
             docker login -u southernlight3816 -p ${{ secrets.DOCKERHUB_PASSWORD }}
+            cd ~/skyisthelimit
+            
+            docker compose down
+            docker compose pull springboot
+            docker compose up -d
+            
+    
           
-      
-
-
+            
+            
+            
