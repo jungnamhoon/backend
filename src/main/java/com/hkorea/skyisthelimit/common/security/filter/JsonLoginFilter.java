@@ -1,11 +1,11 @@
 package com.hkorea.skyisthelimit.common.security.filter;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
 import com.hkorea.skyisthelimit.common.response.SuccessCode;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,9 +29,9 @@ public class JsonLoginFilter extends AbstractAuthenticationProcessingFilter {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public JsonLoginFilter() {
-    super(DEFAULT_REQUEST_MATCHER);
-  }
+//  public JsonLoginFilter() {
+//    super(DEFAULT_REQUEST_MATCHER);
+//  }
 
   public JsonLoginFilter(AuthenticationManager authenticationManager) {
     super(DEFAULT_REQUEST_MATCHER, authenticationManager);
@@ -39,10 +39,14 @@ public class JsonLoginFilter extends AbstractAuthenticationProcessingFilter {
 
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request,
-      HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+      HttpServletResponse response) throws AuthenticationException, IOException {
 
     // Json Body 읽기
-    Map<String, String> loginData = objectMapper.readValue(request.getInputStream(), Map.class);
+    Map<String, String> loginData = objectMapper.readValue(request.getInputStream(),
+        new TypeReference<>() {
+        }
+    );
+
     String username = loginData.get("username");
     String password = loginData.get("password");
 
@@ -55,7 +59,7 @@ public class JsonLoginFilter extends AbstractAuthenticationProcessingFilter {
 
   @Override
   protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-      FilterChain chain, Authentication authResult) throws IOException, ServletException {
+      FilterChain chain, Authentication authResult) throws IOException {
 
     // 인증 정보 SecurityContext에 저장
     SecurityContextHolder.getContext().setAuthentication(authResult);
@@ -73,7 +77,7 @@ public class JsonLoginFilter extends AbstractAuthenticationProcessingFilter {
   @Override
   protected void unsuccessfulAuthentication(HttpServletRequest request,
       HttpServletResponse response, AuthenticationException failed)
-      throws IOException, ServletException {
+      throws IOException {
 
     // JSON 응답 (공통 ApiResponse 사용)
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

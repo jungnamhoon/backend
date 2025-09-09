@@ -46,7 +46,9 @@ public class Problem {
   @CollectionTable(name = "problem_tags", joinColumns = @JoinColumn(name = "problem_id"))
   private List<ProblemTag> problemTagList;
 
+
   @OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private Set<MemberProblem> memberProblems = new HashSet<>();
 
 }

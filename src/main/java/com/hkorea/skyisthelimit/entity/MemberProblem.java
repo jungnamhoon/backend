@@ -34,6 +34,8 @@ public class MemberProblem {
   private LocalDate solvedDate;
   private int solvedCount;
   private MemberProblemStatus status;
+
+  @Builder.Default
   private Boolean noteWritten = false;
   private String note;
   private Long lastSubmitId;

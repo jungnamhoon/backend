@@ -41,17 +41,21 @@ public class Member {
   private String profileImageUrl;
   private String nickname;
   private String role;
-  private int score = 0;
-  private Integer ranking = 0;
-  private int totalSolvedProblems = 0;
-  private int totalReviewNotes = 0;
-  private int streak = 0;
+
+  private int score;
+  private Integer ranking;
+  private int totalSolvedProblems;
+  private int totalReviewNotes;
+  private int streak;
+
   private LocalDate lastSolvedDate;
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private Set<MemberProblem> memberProblems = new HashSet<>();
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private Set<MemberStudy> memberStudies = new HashSet<>();
 
   public static Member create(SignUpRequest requestDTO) {

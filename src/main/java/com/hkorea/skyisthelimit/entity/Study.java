@@ -56,8 +56,8 @@ public class Study {
   private ProblemRank minRank;
   private ProblemRank maxRank;
   private StudyStatus status;
-  private int totalSolvedProblemsCount = 0;
-  private int streak = 0;
+  private int totalSolvedProblemsCount;
+  private int streak;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "creator_id", nullable = false)
@@ -77,6 +77,7 @@ public class Study {
 
   @ElementCollection
   @CollectionTable(name = "study_daily_problems", joinColumns = @JoinColumn(name = "study_id"))
+  @Builder.Default
   private Set<DailyProblem> dailyProblems = new HashSet<>();
 
   @Column(name = "created_at")
