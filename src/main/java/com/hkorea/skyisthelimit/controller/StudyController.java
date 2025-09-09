@@ -92,7 +92,7 @@ public class StudyController implements StudyControllerDocs {
   public ResponseEntity<ApiResponse<MemberStudyParticipationResponse>> handleRequest(
       @PathVariable Integer studyId,
       @AuthenticationPrincipal Jwt token,
-      @PathVariable String requesterUsername,
+      @PathVariable("requester-username") String requesterUsername,
       @RequestBody MemberStudyParticipationRequest requestDTO
   ) {
 
