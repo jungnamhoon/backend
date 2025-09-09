@@ -63,7 +63,7 @@ public class MemberStudyService {
     MemberStudy memberStudy = getMemberStudy(
         requestMember, study);
 
-    validateAdmin(memberStudy.getStudy(), username);
+    validateAdminRequest(memberStudy.getStudy(), username);
     validatePending(memberStudy);
 
     if (newStatus.equals(MemberStudyStatus.APPROVED)) {
@@ -83,7 +83,7 @@ public class MemberStudyService {
     Study study = studyService.getStudy(studyId);
 
     validateAlreadyRequested(inviteeMember, study);
-    validateAdmin(study, username);
+    validateAdminInvite(study, username);
 
     MemberStudy memberStudy = MemberStudy.create(inviteeMember, study, MemberStudyStatus.PENDING);
     memberStudyRepository.save(memberStudy);
@@ -130,9 +130,15 @@ public class MemberStudyService {
     notificationService.createNotification(receiverUsername, message);
   }
 
-  private void validateAdmin(Study study, String username) {
+  private void validateAdminRequest(Study study, String username) {
     if (study.isNotAdmin(username)) {
       throw new BusinessException(ErrorCode.STUDY_ACCEPT_FORBIDDEN);
+    }
+  }
+
+  private void validateAdminInvite(Study study, String username) {
+    if (study.isNotAdmin(username)) {
+      throw new BusinessException(ErrorCode.STUDY_INVITE_FORBIDDEN);
     }
   }
 

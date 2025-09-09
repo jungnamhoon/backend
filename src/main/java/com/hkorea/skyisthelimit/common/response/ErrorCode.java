@@ -32,7 +32,8 @@ public enum ErrorCode {
 
 
   STUDY_REQUEST_NOT_FOUND(HttpStatus.BAD_REQUEST, "MS001", "스터디 참가 요청을 찾을 수 없습니다"),
-  STUDY_ACCEPT_FORBIDDEN(HttpStatus.BAD_REQUEST, "MS002", "방장만이 요청을 수락/거절할 수 있습니다"),
+  STUDY_ACCEPT_FORBIDDEN(HttpStatus.BAD_REQUEST, "MS002", "방장만 요청을 수락/거절할 수 있습니다"),
+  STUDY_INVITE_FORBIDDEN(HttpStatus.BAD_REQUEST, "MS003", "방장만 초대를 보낼 수 있습니다"),
   STUDY_REQUEST_NOT_PENDING(HttpStatus.BAD_REQUEST, "MS003", "대기 중인 요청이 아닙니다"),
   NOT_QUESTION_SETTER(HttpStatus.BAD_REQUEST, "MS004", "오늘의 문제 출제자가 아닙니다"),
   DUPLICATE_TODAY_PROBLEM(HttpStatus.BAD_REQUEST, "MS005", "오늘의 문제는 이미 출제되었습니다"),
