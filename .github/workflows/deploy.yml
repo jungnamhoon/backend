@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: '21'
+          java-version: '17'
 
       # 3️⃣ application.yml, application-dev.yml 생성
       - name: make application.yml
@@ -63,15 +63,9 @@ jobs:
           script: |
             
             
-            docker login -u southernlight3816 -p ${{ secrets.DOCKERHUB_PASSWORD }}
+            docker login -u southernlight3816 -p ${{ secrets.DOCKER_PASSWORD }}
             cd ~/skyisthelimit
             
             docker compose down
             docker compose pull springboot
             docker compose up -d
-            
-    
-          
-            
-            
-            
