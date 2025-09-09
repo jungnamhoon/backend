@@ -47,7 +47,7 @@ jobs:
       # 7️⃣ Docker 이미지 빌드 및 태그
       - name: Build and tag Docker image
         run: |
-          docker build -t skyisthelimit/backend .
+          docker build -t skyisthelimit-backend .
           docker tag skyisthelimit-backend:latest southernlight3816/skyisthelimit-backend:latest
 
       # 8️⃣ Docker Hub로 이미지 push
