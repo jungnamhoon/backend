@@ -47,6 +47,8 @@ public class MemberProblemService {
   public Page<MemberProblemResponse> getMemberProblemPage(String username,
       PageableCriteria<QMemberProblem> criteria) {
 
+    memberService.getMember(username);
+    
     QMemberProblem memberProblem = QMemberProblem.memberProblem;
 
     BooleanExpression predicate = criteria.toPredicate().and(usernameEq(username));
