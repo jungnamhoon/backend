@@ -1,4 +1,4 @@
-package com.hkorea.skyisthelimit.common.security;
+package com.hkorea.skyisthelimit.common.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
