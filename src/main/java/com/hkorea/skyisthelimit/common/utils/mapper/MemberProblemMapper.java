@@ -79,9 +79,7 @@ public class MemberProblemMapper {
         .problemRank(memberProblem.getProblem().getRank())
         .build();
   }
-
-  // List
-
+  
   public static List<MemberProblemTagCountResponse> toMemberProblemTagCountResponseList(
       List<MemberProblem> memberProblemList) {
 

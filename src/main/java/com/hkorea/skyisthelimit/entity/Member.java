@@ -41,13 +41,11 @@ public class Member {
   private String profileImageUrl;
   private String nickname;
   private String role;
-
   private int score;
   private Integer ranking;
   private int totalSolvedProblems;
   private int totalReviewNotes;
   private int streak;
-
   private LocalDate lastSolvedDate;
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -68,12 +66,10 @@ public class Member {
         .build();
   }
 
-  public Member update(MemberUpdateRequest requestDTO) {
+  public void update(MemberUpdateRequest requestDTO) {
 
     this.nickname = requestDTO.getNickname();
     this.profileImageUrl = requestDTO.getProfileImageUrl();
-
-    return this;
   }
 
   public void recordNewProblemSolved(MemberProblem memberProblem) {
@@ -81,7 +77,6 @@ public class Member {
     addMemberProblem(memberProblem);
     incrementScore(memberProblem.getProblem());
     incrementTotalSolvedProblems();
-
     updateStreak();
     updateLastSolvedDate();
   }
@@ -94,7 +89,7 @@ public class Member {
     incrementTotalReviewNotes();
   }
 
-  public void updateStreak() {
+  private void updateStreak() {
 
     if (lastSolvedDate == null) {
       streak = 1;
@@ -107,24 +102,20 @@ public class Member {
     }
   }
 
-  private void addMemberProblem(MemberProblem memberProblem) {
-    this.memberProblems.add(memberProblem);
-  }
-
   private void updateLastSolvedDate() {
     this.lastSolvedDate = getToday();
   }
 
+  private void addMemberProblem(MemberProblem memberProblem) {
+    this.memberProblems.add(memberProblem);
+  }
+  
   private void incrementScore(Problem problem) {
     this.score += problem.getLevel();
   }
 
   private void incrementTotalSolvedProblems() {
     this.totalSolvedProblems += 1;
-  }
-
-  private void incrementStreak() {
-    this.streak += 1;
   }
 
   private void incrementTotalReviewNotes() {

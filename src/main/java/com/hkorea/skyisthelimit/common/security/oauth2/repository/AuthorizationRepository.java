@@ -1,6 +1,6 @@
-package com.hkorea.skyisthelimit.repository;
+package com.hkorea.skyisthelimit.common.security.oauth2.repository;
 
-import com.hkorea.skyisthelimit.entity.Authorization;
+import com.hkorea.skyisthelimit.common.security.oauth2.entity.Authorization;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

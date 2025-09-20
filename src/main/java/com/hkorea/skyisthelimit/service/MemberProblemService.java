@@ -48,7 +48,7 @@ public class MemberProblemService {
       PageableCriteria<QMemberProblem> criteria) {
 
     memberService.getMember(username);
-    
+
     QMemberProblem memberProblem = QMemberProblem.memberProblem;
 
     BooleanExpression predicate = criteria.toPredicate().and(usernameEq(username));
@@ -118,7 +118,7 @@ public class MemberProblemService {
     List<MemberProblem> memberProblems = memberProblemRepository.findByMemberUsername(username);
 
     return MemberProblemMapper.toMemberProblemTagCountResponseList(memberProblems);
-
+    
   }
 
   private MemberProblem findMemberProblem(String username, Integer baekjoonId) {

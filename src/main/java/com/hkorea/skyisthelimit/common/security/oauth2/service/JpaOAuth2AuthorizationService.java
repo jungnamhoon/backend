@@ -1,10 +1,10 @@
-package com.hkorea.skyisthelimit.common.security.service;
+package com.hkorea.skyisthelimit.common.security.oauth2.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hkorea.skyisthelimit.entity.Authorization;
-import com.hkorea.skyisthelimit.repository.AuthorizationRepository;
+import com.hkorea.skyisthelimit.common.security.oauth2.entity.Authorization;
+import com.hkorea.skyisthelimit.common.security.oauth2.repository.AuthorizationRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;

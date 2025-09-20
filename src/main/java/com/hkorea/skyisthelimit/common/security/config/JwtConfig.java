@@ -1,5 +1,8 @@
 package com.hkorea.skyisthelimit.common.security.config;
 
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKMatcher;
+import com.nimbusds.jose.jwk.JWKSelector;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -11,14 +14,16 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 @Configuration
-public class CommonKeyConfig {
+public class JwtConfig {
 
-  // 추후에 변경
   private static final String PUBLIC_KEY_B64 =
       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsqlV8QG6bGlRYFrFcRX9" +
           "1KKStGd7vBCsM0PXdDpUtxIiJw4eQIFo+rYZdbevO1p0wOabKHSFhk96Tc1oZt5X" +
@@ -57,17 +62,6 @@ public class CommonKeyConfig {
           "qY/ls4RYkup1VgxTTrfmSg==";
 
   @Bean
-  public JWKSource<SecurityContext> jwkSource(KeyPair keyPair) {
-    RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-    RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-    RSAKey rsaKey = new RSAKey.Builder(publicKey).privateKey(privateKey)
-        .keyID(UUID.randomUUID().toString()).build();
-    JWKSet jwkSet = new JWKSet(rsaKey);
-
-    return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
-  }
-
-  @Bean
   public KeyPair rsaKeyPair() {
 
     try {
@@ -86,4 +80,40 @@ public class CommonKeyConfig {
       throw new IllegalStateException("Failed to generate RSA KeyPair", e);
     }
   }
+
+  @Bean
+  public JWKSource<SecurityContext> jwkSource(KeyPair keyPair) {
+    RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
+    RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
+    RSAKey rsaKey = new RSAKey.Builder(publicKey).privateKey(privateKey)
+        .keyID(UUID.randomUUID().toString()).build();
+    JWKSet jwkSet = new JWKSet(rsaKey);
+
+    return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+  }
+
+  @Bean
+  public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
+    try {
+      // 모든 키 선택
+      JWKSelector jwkSelector = new JWKSelector(new JWKMatcher.Builder().build());
+      List<JWK> keys = jwkSource.get(jwkSelector, null);
+
+      if (keys.isEmpty()) {
+        throw new IllegalStateException("No JWK keys available for JwtDecoder");
+      }
+
+      JWK jwk = keys.get(0);
+
+      if (!(jwk instanceof RSAKey rsaKey)) {
+        throw new IllegalStateException("Expected RSAKey for JwtDecoder");
+      }
+
+      return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to create JwtDecoder from JWKSource", e);
+    }
+  }
+
+
 }

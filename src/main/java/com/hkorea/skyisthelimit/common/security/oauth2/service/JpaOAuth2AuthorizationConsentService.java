@@ -1,7 +1,7 @@
-package com.hkorea.skyisthelimit.common.security.service;
+package com.hkorea.skyisthelimit.common.security.oauth2.service;
 
-import com.hkorea.skyisthelimit.entity.Consent;
-import com.hkorea.skyisthelimit.repository.ConsentRepository;
+import com.hkorea.skyisthelimit.common.security.oauth2.entity.Consent;
+import com.hkorea.skyisthelimit.common.security.oauth2.repository.ConsentRepository;
 import java.util.HashSet;
 import java.util.Set;
 import org.springframework.dao.DataRetrievalFailureException;

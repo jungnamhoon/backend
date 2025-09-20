@@ -1,7 +1,7 @@
 package com.hkorea.skyisthelimit.common.utils.mapper;
 
+import com.hkorea.skyisthelimit.common.security.oauth2.entity.Register;
 import com.hkorea.skyisthelimit.dto.auth.response.RegisterResponse;
-import com.hkorea.skyisthelimit.entity.Register;
 
 public class AuthMapper {
 

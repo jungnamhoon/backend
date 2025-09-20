@@ -95,7 +95,6 @@ public class MemberProblemController implements MemberProblemControllerDocs {
     return ApiResponse.of(SuccessCode.OK, responseDTO);
   }
 
-
   @GetMapping("/{username}/statistics")
   public ResponseEntity<ApiResponse<List<MemberProblemTagCountResponse>>> getMemberStatistics(
       @PathVariable String username) {
@@ -103,5 +102,5 @@ public class MemberProblemController implements MemberProblemControllerDocs {
         username);
     return ApiResponse.of(SuccessCode.OK, responseDTOList);
   }
-
+  
 }

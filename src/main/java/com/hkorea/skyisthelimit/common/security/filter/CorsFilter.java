@@ -1,4 +1,4 @@
-package com.hkorea.skyisthelimit.common;
+package com.hkorea.skyisthelimit.common.security.filter;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;

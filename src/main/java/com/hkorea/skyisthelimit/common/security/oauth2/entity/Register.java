@@ -1,4 +1,4 @@
-package com.hkorea.skyisthelimit.entity;
+package com.hkorea.skyisthelimit.common.security.oauth2.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

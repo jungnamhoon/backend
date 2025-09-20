@@ -1,6 +1,6 @@
 package com.hkorea.skyisthelimit.dto.auth.request;
 
-import com.hkorea.skyisthelimit.entity.Register;
+import com.hkorea.skyisthelimit.common.security.oauth2.entity.Register;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;

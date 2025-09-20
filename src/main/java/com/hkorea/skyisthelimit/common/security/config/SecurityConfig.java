@@ -2,8 +2,8 @@ package com.hkorea.skyisthelimit.common.security.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-import com.hkorea.skyisthelimit.common.security.CustomAuthenticationEntryPoint;
 import com.hkorea.skyisthelimit.common.security.filter.JsonLoginFilter;
+import com.hkorea.skyisthelimit.common.security.handler.CustomAuthenticationEntryPoint;
 import com.hkorea.skyisthelimit.common.security.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
@@ -25,7 +27,7 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
-public class AuthSecurityConfig {
+public class SecurityConfig {
 
   @Bean
   @Order(1)
@@ -37,15 +39,12 @@ public class AuthSecurityConfig {
 
     http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
         .with(authorizationServerConfigurer, withDefaults())
-        .authorizeHttpRequests((authorize) -> authorize
+        .authorizeHttpRequests(auth -> auth
             .anyRequest().authenticated())
-        .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
-            new LoginUrlAuthenticationEntryPoint("/login"),
-            new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
-
-    http.
-        sessionManagement(session -> session.
-            sessionFixation().migrateSession());
+        .exceptionHandling(ex -> ex
+            .defaultAuthenticationEntryPointFor(
+                new LoginUrlAuthenticationEntryPoint("/login"),
+                new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
 
     return http.build();
   }
@@ -64,15 +63,16 @@ public class AuthSecurityConfig {
 
     JsonLoginFilter jsonLoginFilter = new JsonLoginFilter(authenticationManager);
 
-    http.securityMatcher("auth/**").csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(
-            auth -> auth.requestMatchers("/auth/token").authenticated().anyRequest().permitAll())
+    http
+        .securityMatcher("auth/**")
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(
+            auth -> auth
+                .requestMatchers("/auth/token").authenticated().anyRequest().permitAll())
         .addFilterAt(jsonLoginFilter, UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(
-            exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint));
-
-    http.
-        sessionManagement(session -> session.
-            sessionFixation().migrateSession());
+            ex -> ex.
+                authenticationEntryPoint(customAuthenticationEntryPoint));
 
     return http.build();
   }
@@ -84,15 +84,49 @@ public class AuthSecurityConfig {
   @Bean
   @Order(3)
   public SecurityFilterChain formAuthFilterChain(HttpSecurity http) throws Exception {
-    http.securityMatcher("/login", "/signup")
-        .formLogin(form -> form
-            .loginPage("/login")
-        )
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
-    http.
-        sessionManagement(session -> session.
-            sessionFixation().migrateSession());
+    http
+        .securityMatcher("/login", "/signup")
+        .formLogin(form -> form
+            .loginPage("/login"))
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().permitAll());
+
+    return http.build();
+  }
+
+  @Bean
+  @Order(4)
+  public SecurityFilterChain resourceFilterChain(HttpSecurity http,
+      CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+
+    http
+        .oauth2ResourceServer(resource -> resource
+            .jwt(Customizer.withDefaults())
+            .authenticationEntryPoint(customAuthenticationEntryPoint));
+
+    http
+        .securityMatcher("/api/**")
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/test/public").permitAll()
+            .anyRequest().authenticated());
+
+    http
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+    return http.build();
+  }
+
+  @Bean
+  @Order(5)
+  public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
+    http
+        .securityMatcher("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().permitAll());
 
     return http.build();
   }
@@ -101,9 +135,12 @@ public class AuthSecurityConfig {
   public AuthenticationManager authenticationManager(
       CustomUserDetailsService customUserDetailsService,
       BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
+
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+
     provider.setUserDetailsService(customUserDetailsService);
     provider.setPasswordEncoder(bCryptPasswordEncoder);
+
     return new ProviderManager(provider);
   }
 

@@ -62,7 +62,6 @@ public class NotificationService {
     Notification notification = Notification.create(receiver, message);
     notificationRepository.save(notification);
     sendToClient(receiverUsername, NotificationMapper.toNotificationResponse(notification));
-
   }
 
   private void sendToClient(String username, Object data) {
