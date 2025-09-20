@@ -6,8 +6,10 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -52,11 +54,15 @@ public class AppConfig {
             .type(SecurityScheme.Type.HTTP)
             .scheme("basic"));
 
+    Server server = new Server();
+    server.setUrl("https://skyisthelimit.kro.kr/");
+
     return new OpenAPI()
         .components(components)
         // Bearer 인증과 Basic 인증 요구 사항 추가
         .addSecurityItem(securityRequirement)
-        .addSecurityItem(basicSecurityRequirement);
+        .addSecurityItem(basicSecurityRequirement)
+        .servers(List.of(server));
   }
 
 }
