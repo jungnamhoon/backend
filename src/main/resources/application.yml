@@ -1,0 +1,18 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        secure: true
+
+spring:
+  application:
+    name: skyisthelimit
+
+  output:
+    ansi:
+      enabled: always
+
+  jpa:
+    open-in-view: false

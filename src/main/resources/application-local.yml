@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/skyisthelimit?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: root
+    password: Dlrpskdi77@
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+
+cors:
+  allowed-origins: "http://localhost:5000,https://www.acmicpc.net,https://skyisthelimit.cloud"
+
+swagger:
+  server-url: http://localhost:8080
