@@ -44,3 +44,5 @@ out/
 /src/main/resources/application-docker.yml
 
 /src/main/java/com/hkorea/skyisthelimit/common/config/MemberDataLoader.java
+
+/.env
