@@ -12,6 +12,7 @@ import com.hkorea.skyisthelimit.dto.auth.response.JwtResponse;
 import com.hkorea.skyisthelimit.dto.auth.response.RegisterResponse;
 import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.repository.MemberRepository;
+import jakarta.transaction.Transactional;
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -28,6 +29,7 @@ public class AuthService {
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
   private final JwtHelper jwtUtil;
 
+  @Transactional
   public void signUp(SignUpRequest requestDTO) {
 
     if (memberRepository.existsByUsername(requestDTO.getUsername())) {
