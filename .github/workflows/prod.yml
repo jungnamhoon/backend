@@ -65,4 +65,4 @@ jobs:
             
             docker compose down
             docker compose pull springboot
-            docker compose up -d
+            docker compose up -d -e SPRING_PROFILES_ACTIVE=dev
