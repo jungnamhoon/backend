@@ -10,12 +10,16 @@ import io.swagger.v3.oas.models.servers.Server;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class AppConfig {
+
+  @Value("${swagger.server-url}")
+  private String swaggerServerUrl;
 
   @PersistenceContext
   private EntityManager em;
@@ -55,7 +59,7 @@ public class AppConfig {
             .scheme("basic"));
 
     Server server = new Server();
-    server.setUrl("https://skyisthelimit.kro.kr/");
+    server.setUrl(swaggerServerUrl);
 
     return new OpenAPI()
         .components(components)
