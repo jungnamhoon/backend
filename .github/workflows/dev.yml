@@ -1,68 +1,56 @@
-name: skyisthelimit CI/CD
+name: Deploy Dev Server
 
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-22.04
     steps:
-      # 1️⃣ 레포지토리 코드 체크아웃
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ JDK 17 설치 (Gradle 빌드용)
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
           java-version: '17'
 
-      # 3️⃣ application.yml, application-dev.yml 생성
       - name: make application.yml
-        if: contains(github.ref,'main')
+        if: contains(github.ref,'dev')
         run: |
           mkdir -p ./src/main/resources
           cd ./src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > ./application.yml
-          echo "${{ secrets.APPLICATION_DEV_YML }}" > ./application-dev.yml
+          echo "${{ secrets.APPLICATION_DEV_YML }}" > ./application.yml
 
-      # 4️⃣ gradlew 실행 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # 5️⃣ Gradle 빌드
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      # 6️⃣ Docker Hub 로그인
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: southernlight3816
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 7️⃣ Docker 이미지 빌드 및 태그
-      - name: Build and tag Docker image
+      - name: Build and push Docker image
         run: |
-          docker build -t skyisthelimit-backend .
-          docker tag skyisthelimit-backend:latest southernlight3816/skyisthelimit-backend:latest
-
-      # 8️⃣ Docker Hub로 이미지 push
-      - name: Push Docker image to Docker Hub
-        run: docker push southernlight3816/skyisthelimit-backend:latest
+          IMAGE_NAME=southernlight3816/skyisthelimit-dev:latest
+          docker build -t skyisthelimit-dev .
+          docker tag skyisthelimit-dev $IMAGE_NAME
+          docker push $IMAGE_NAME
 
       - name: Deploy to VULTR
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.VULTR_HOST }}
+          host: ${{ secrets.VULTR_DEV_HOST }}
           username: ${{ secrets.VULTR_USERNAME }}
-          password: ${{ secrets.VULTR_PASSWORD }}
+          password: ${{ secrets.VULTR_DEV_PASSWORD }}
           script: |
-            
-            
             docker login -u southernlight3816 -p ${{ secrets.DOCKER_PASSWORD }}
             cd ~/skyisthelimit
             
