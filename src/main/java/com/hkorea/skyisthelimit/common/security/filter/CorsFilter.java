@@ -9,11 +9,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter implements Filter {
@@ -29,6 +31,8 @@ public class CorsFilter implements Filter {
     HttpServletRequest request = (HttpServletRequest) req;
 
     String origin = request.getHeader("Origin");
+
+    log.info("fucking {}", origin);
 
     if (allowedOrigins.contains(origin)) {
       response.setHeader("Access-Control-Allow-Origin", origin);
