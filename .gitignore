@@ -37,5 +37,12 @@ out/
 .vscode/
 
 # Application YAML files
-/application.yml
-/application-local.yml
+/src/main/resources/application.yml
+/src/main/resources/application-local.yml
+/src/main/resources/application-dev.yml
+/src/main/resources/application-prod.yml
+/src/main/resources/application-docker.yml
+
+/src/main/java/com/hkorea/skyisthelimit/common/config/MemberDataLoader.java
+
+/.env

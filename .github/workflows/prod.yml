@@ -24,7 +24,14 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           cd ./src/main/resources
-          echo "${{ secrets.APPLICATION_PROD_YML }}" > ./application.yml
+          
+          cat <<EOF > application.yml
+          ${{ secrets.APPLICATION_YML }}
+          EOF
+          
+          cat <<EOF > application-prod.yml
+          ${{ secrets.APPLICATION_PROD_YML }}
+          EOF
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
