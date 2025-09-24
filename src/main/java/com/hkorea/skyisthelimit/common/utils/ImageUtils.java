@@ -17,14 +17,11 @@ public class ImageUtils {
   private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_WIDTH = 8000;
   private static final int MAX_HEIGHT = 8000;
-  private static final int THUMBNAIL_SIZE = 1920;
+  private static final int THUMBNAIL_SIZE = 200;
 
 
   public static void validateImage(MultipartFile image) throws IOException {
-
-    log.info("image size : {}", image.getSize());
-    log.info("image contentType : {}", image.getContentType());
-
+    
     validateFileSize(image.getSize());
     validateMimeType(image.getContentType());
     BufferedImage originalImage = ImageIO.read(image.getInputStream());
@@ -57,11 +54,7 @@ public class ImageUtils {
   }
 
   private static void validateFileSize(long fileSize) {
-
-    log.info("file size : {} max file size : {}", fileSize, MAX_FILE_SIZE);
-
     if (fileSize > MAX_FILE_SIZE) {
-      log.info("file size : {} max file size : {}", fileSize, MAX_FILE_SIZE);
       throw new BusinessException(ErrorCode.INVALID_IMAGE_SIZE);
     }
   }
@@ -73,9 +66,6 @@ public class ImageUtils {
   }
 
   private static void validateResolution(BufferedImage image) {
-
-    log.info("image resolution {} x {}", image.getWidth(), image.getHeight());
-
     if (image.getWidth() > MAX_WIDTH || image.getHeight() > MAX_HEIGHT) {
       throw new BusinessException(ErrorCode.INVALID_IMAGE_RESOLUTION);
     }
