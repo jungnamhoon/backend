@@ -20,7 +20,7 @@ public enum ErrorCode {
   MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "M003", "멤버를 찾을 수 없습니다"),
   INVALID_IMAGE_SIZE(HttpStatus.BAD_REQUEST, "M004", "잘못된 이미지 사이즈입니다"),
   INVALID_IMAGE_MIME_TYPE(HttpStatus.BAD_REQUEST, "M005", "잘못된 이미지 MIME_TYPE 입니다"),
-  INVALID_IMAGE_RESOLUTION(HttpStatus.BAD_REQUEST, "M006", "잘못된 이미지 사이즈입니다"),
+  INVALID_IMAGE_RESOLUTION(HttpStatus.BAD_REQUEST, "M006", "잘못된 이미지 RESOLUTION 입니다"),
 
   MEMBER_PROBLEM_NOT_FOUND(HttpStatus.BAD_REQUEST, "MP001", "회원의 문제를 찾을 수 없습니다"),
 

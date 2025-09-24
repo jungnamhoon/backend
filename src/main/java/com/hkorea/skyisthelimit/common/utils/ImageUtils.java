@@ -14,8 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImageUtils {
 
   private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  private static final int MAX_WIDTH = 2000;
-  private static final int MAX_HEIGHT = 2000;
+  private static final int MAX_WIDTH = 8000;
+  private static final int MAX_HEIGHT = 8000;
   private static final int THUMBNAIL_SIZE = 256;
 
 
