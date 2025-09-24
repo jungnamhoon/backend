@@ -14,20 +14,29 @@ import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.entity.MemberProblem;
 import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import com.hkorea.skyisthelimit.repository.MemberRepository;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
   private final MemberRepository memberRepository;
+  private final MinioClient minioClient;
+
+  @Value("${minio.bucket}")
+  private String bucketName;
 
   @Transactional
   public MemberInfoResponse getMemberInfo(String username) {
@@ -47,6 +56,34 @@ public class MemberService {
 
     return MemberMapper.toMemberUpdateResponse(member);
   }
+
+  @Transactional
+  public String updateProfileImage(String username, MultipartFile profileImage) throws Exception {
+    Member member = getMember(username);
+
+    if (profileImage != null && !profileImage.isEmpty()) {
+      String objectName = "profile/"
+          + username + "_"
+          + Instant.now().toEpochMilli() + "_"
+          + profileImage.getOriginalFilename();
+
+      minioClient.putObject(
+          PutObjectArgs.builder()
+              .bucket(bucketName)
+              .object(objectName)
+              .stream(profileImage.getInputStream(), profileImage.getSize(), -1)
+              .contentType(profileImage.getContentType())
+              .build()
+      );
+
+      String imageUrl = bucketName + "/" + objectName;
+      member.setProfileImageUrl(imageUrl);
+      return imageUrl;
+    }
+
+    return member.getProfileImageUrl();
+  }
+
 
   public Member getMember(String username) {
     return memberRepository.findByUsername(username)
