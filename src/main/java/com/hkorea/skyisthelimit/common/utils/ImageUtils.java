@@ -6,9 +6,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 public class ImageUtils {
 
   private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -18,6 +20,9 @@ public class ImageUtils {
 
 
   public static void validateImage(MultipartFile image) throws IOException {
+
+    log.info("image size : {}", image.getSize());
+    log.info("image contentType : {}", image.getContentType());
 
     validateFileSize(image.getSize());
     validateMimeType(image.getContentType());
@@ -62,6 +67,9 @@ public class ImageUtils {
   }
 
   private static void validateResolution(BufferedImage image) {
+
+    log.info("image resolution {} x {}", image.getWidth(), image.getHeight());
+    
     if (image.getWidth() > MAX_WIDTH || image.getHeight() > MAX_HEIGHT) {
       throw new BusinessException(ErrorCode.INVALID_IMAGE_RESOLUTION);
     }
