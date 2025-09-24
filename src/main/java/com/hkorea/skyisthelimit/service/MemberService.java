@@ -2,6 +2,7 @@ package com.hkorea.skyisthelimit.service;
 
 import com.hkorea.skyisthelimit.common.exception.BusinessException;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
+import com.hkorea.skyisthelimit.common.utils.ImageUtils;
 import com.hkorea.skyisthelimit.common.utils.mapper.MemberMapper;
 import com.hkorea.skyisthelimit.common.utils.mapper.MemberProblemMapper;
 import com.hkorea.skyisthelimit.dto.member.internal.MemberStatsDTO;
@@ -26,6 +27,7 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import jakarta.transaction.Transactional;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -81,9 +83,18 @@ public class MemberService {
       return MemberMapper.toProfileUpdateResponse(member.getProfileImageUrl());
     }
 
+    // 1. 기존 이미지 삭제
     deleteOldProfileImage(member);
 
-    String imageUrl = uploadProfileImage(username, profileImage);
+    // 2. 이미지 검증
+    ImageUtils.validateImage(profileImage);
+
+    // 3. 썸네일 생성
+    byte[] thumbnail = ImageUtils.createThumbnail(profileImage);
+    
+    // 파일 업로드
+    String imageUrl = uploadProfileImage(
+        username, thumbnail, profileImage.getOriginalFilename(), profileImage.getContentType());
 
     member.setProfileImageUrl(imageUrl);
 
@@ -169,23 +180,27 @@ public class MemberService {
     }
   }
 
-  private String uploadProfileImage(String username, MultipartFile file)
+  private String uploadProfileImage(String username, byte[] thumbnail, String originalFilename,
+      String contentType)
       throws ErrorResponseException, InsufficientDataException, InternalException,
       InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException,
       ServerException, XmlParserException {
 
     String objectName =
         "profile/" + username + "_" + Instant.now().toEpochMilli() + "_"
-            + file.getOriginalFilename();
+            + originalFilename;
 
-    minioClient.putObject(
-        PutObjectArgs.builder()
-            .bucket(bucketName)
-            .object(objectName)
-            .stream(file.getInputStream(), file.getSize(), -1)
-            .contentType(file.getContentType())
-            .build()
-    );
+    try (ByteArrayInputStream bis = new ByteArrayInputStream(thumbnail)) {
+      minioClient.putObject(
+          PutObjectArgs.builder()
+              .bucket(bucketName)
+              .object(objectName)
+              .stream(bis, thumbnail.length, -1)
+              .contentType(contentType)
+              .build()
+      );
+    }
+
     return bucketName + "/" + objectName;
   }
 

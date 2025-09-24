@@ -40,6 +40,8 @@ dependencies {
     implementation 'org.springframework.session:spring-session-core'
 
     implementation 'io.minio:minio:8.5.9'
+    
+    implementation 'net.coobird:thumbnailator:0.4.19'
 
     //QueryDsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
