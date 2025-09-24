@@ -3,6 +3,7 @@ package com.hkorea.skyisthelimit.common.utils.mapper;
 import com.hkorea.skyisthelimit.dto.member.internal.MemberStatsDTO;
 import com.hkorea.skyisthelimit.dto.member.response.MemberInfoResponse;
 import com.hkorea.skyisthelimit.dto.member.response.MemberUpdateResponse;
+import com.hkorea.skyisthelimit.dto.member.response.ProfileUpdateResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.internal.MemberProblemSolvedCountByDayDTO;
 import com.hkorea.skyisthelimit.dto.memberproblem.internal.MemberProblemSolvedDTO;
 import com.hkorea.skyisthelimit.entity.Member;
@@ -44,6 +45,12 @@ public class MemberMapper {
         .ranking(ranking)
         .memberProblemSolvedDTOList(memberProblemSolvedDTOList)
         .memberProblemSolvedCountByDayDTOList(memberProblemSolvedCountByDayDTOList)
+        .build();
+  }
+
+  public static ProfileUpdateResponse toProfileUpdateResponse(String imageUrl) {
+    return ProfileUpdateResponse.builder()
+        .imageUrl(imageUrl)
         .build();
   }
 }

@@ -8,6 +8,7 @@ import com.hkorea.skyisthelimit.dto.member.internal.MemberStatsDTO;
 import com.hkorea.skyisthelimit.dto.member.request.MemberUpdateRequest;
 import com.hkorea.skyisthelimit.dto.member.response.MemberInfoResponse;
 import com.hkorea.skyisthelimit.dto.member.response.MemberUpdateResponse;
+import com.hkorea.skyisthelimit.dto.member.response.ProfileUpdateResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.internal.MemberProblemSolvedCountByDayDTO;
 import com.hkorea.skyisthelimit.dto.memberproblem.internal.MemberProblemSolvedDTO;
 import com.hkorea.skyisthelimit.entity.Member;
@@ -16,7 +17,18 @@ import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import com.hkorea.skyisthelimit.repository.MemberRepository;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
+import io.minio.StatObjectArgs;
+import io.minio.errors.ErrorResponseException;
+import io.minio.errors.InsufficientDataException;
+import io.minio.errors.InternalException;
+import io.minio.errors.InvalidResponseException;
+import io.minio.errors.ServerException;
+import io.minio.errors.XmlParserException;
 import jakarta.transaction.Transactional;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -58,32 +70,25 @@ public class MemberService {
   }
 
   @Transactional
-  public String updateProfileImage(String username, MultipartFile profileImage) throws Exception {
+  public ProfileUpdateResponse updateProfileImage(String username, MultipartFile profileImage)
+      throws ErrorResponseException, InsufficientDataException, InternalException,
+      InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException,
+      ServerException, XmlParserException {
+
     Member member = getMember(username);
 
-    if (profileImage != null && !profileImage.isEmpty()) {
-      String objectName = "profile/"
-          + username + "_"
-          + Instant.now().toEpochMilli() + "_"
-          + profileImage.getOriginalFilename();
-
-      minioClient.putObject(
-          PutObjectArgs.builder()
-              .bucket(bucketName)
-              .object(objectName)
-              .stream(profileImage.getInputStream(), profileImage.getSize(), -1)
-              .contentType(profileImage.getContentType())
-              .build()
-      );
-
-      String imageUrl = bucketName + "/" + objectName;
-      member.setProfileImageUrl(imageUrl);
-      return imageUrl;
+    if (profileImage == null || profileImage.isEmpty()) {
+      return MemberMapper.toProfileUpdateResponse(member.getProfileImageUrl());
     }
 
-    return member.getProfileImageUrl();
-  }
+    deleteOldProfileImage(member);
 
+    String imageUrl = uploadProfileImage(username, profileImage);
+
+    member.setProfileImageUrl(imageUrl);
+
+    return MemberMapper.toProfileUpdateResponse(imageUrl);
+  }
 
   public Member getMember(String username) {
     return memberRepository.findByUsername(username)
@@ -141,5 +146,53 @@ public class MemberService {
     return MemberProblemMapper.toMemberProblemSolvedCountByDayDTOList(dateToSolvedCountMap);
   }
 
+  private void deleteOldProfileImage(Member member)
+      throws ErrorResponseException, InsufficientDataException, InternalException,
+      InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException,
+      ServerException, XmlParserException {
+
+    String oldUrl = member.getProfileImageUrl();
+
+    if (oldUrl == null || oldUrl.isEmpty()) {
+      return;
+    }
+
+    String oldObjectName = oldUrl.substring(bucketName.length() + 1);
+
+    if (isHaveImage(oldObjectName)) {
+      minioClient.removeObject(
+          RemoveObjectArgs.builder()
+              .bucket(bucketName)
+              .object(oldObjectName)
+              .build()
+      );
+    }
+  }
+
+  private String uploadProfileImage(String username, MultipartFile file)
+      throws ErrorResponseException, InsufficientDataException, InternalException,
+      InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException,
+      ServerException, XmlParserException {
+
+    String objectName = "profile/" + username + "_" + Instant.now().toEpochMilli();
+    minioClient.putObject(
+        PutObjectArgs.builder()
+            .bucket(bucketName)
+            .object(objectName)
+            .stream(file.getInputStream(), file.getSize(), -1)
+            .contentType(file.getContentType())
+            .build()
+    );
+    return bucketName + "/" + objectName;
+  }
+
+  private boolean isHaveImage(String fileName) {
+    try {
+      minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(fileName).build());
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
 
 }

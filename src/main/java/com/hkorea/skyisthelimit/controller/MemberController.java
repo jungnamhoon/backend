@@ -6,6 +6,7 @@ import com.hkorea.skyisthelimit.controller.docs.MemberControllerDocs;
 import com.hkorea.skyisthelimit.dto.member.request.MemberUpdateRequest;
 import com.hkorea.skyisthelimit.dto.member.response.MemberInfoResponse;
 import com.hkorea.skyisthelimit.dto.member.response.MemberUpdateResponse;
+import com.hkorea.skyisthelimit.dto.member.response.ProfileUpdateResponse;
 import com.hkorea.skyisthelimit.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -51,16 +52,16 @@ public class MemberController implements MemberControllerDocs {
   }
 
   @PostMapping(value = "/me/profile-image", consumes = {"multipart/form-data"})
-  public ResponseEntity<ApiResponse<String>> uploadProfileImage(
+  public ResponseEntity<ApiResponse<ProfileUpdateResponse>> uploadProfileImage(
       @AuthenticationPrincipal Jwt token,
       @RequestPart("file") MultipartFile profileImage) throws Exception {
 
-    String imageUrl = memberService.updateProfileImage(
+    ProfileUpdateResponse responseDTO = memberService.updateProfileImage(
         token.getClaim("username"),
         profileImage
     );
 
-    return ApiResponse.of(SuccessCode.OK, imageUrl);
+    return ApiResponse.of(SuccessCode.OK, responseDTO);
   }
 
 
