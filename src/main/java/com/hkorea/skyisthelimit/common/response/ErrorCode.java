@@ -18,7 +18,9 @@ public enum ErrorCode {
   DUPLICATE_MEMBER(HttpStatus.BAD_REQUEST, "M001", "이미 존재하는 회원입니다"),
   DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "M002", "이미 존재하는 닉네임입니다"),
   MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "M003", "멤버를 찾을 수 없습니다"),
-  INVALID_PROFILE_IMAGE(HttpStatus.BAD_REQUEST, "M004", "잘못된 이미지입니다. 이미지를 업로드 할 수 없습니다"),
+  INVALID_IMAGE_SIZE(HttpStatus.BAD_REQUEST, "M004", "잘못된 이미지 사이즈입니다"),
+  INVALID_IMAGE_MIME_TYPE(HttpStatus.BAD_REQUEST, "M005", "잘못된 이미지 MIME_TYPE 입니다"),
+  INVALID_IMAGE_RESOLUTION(HttpStatus.BAD_REQUEST, "M006", "잘못된 이미지 사이즈입니다"),
 
   MEMBER_PROBLEM_NOT_FOUND(HttpStatus.BAD_REQUEST, "MP001", "회원의 문제를 찾을 수 없습니다"),
 

@@ -51,19 +51,19 @@ public class ImageUtils {
 
   private static void validateFileSize(long fileSize) {
     if (fileSize > MAX_FILE_SIZE) {
-      throw new BusinessException(ErrorCode.INVALID_PROFILE_IMAGE);
+      throw new BusinessException(ErrorCode.INVALID_IMAGE_SIZE);
     }
   }
 
   private static void validateMimeType(String contentType) {
     if (contentType == null || !contentType.startsWith("image/")) {
-      throw new BusinessException(ErrorCode.INVALID_PROFILE_IMAGE);
+      throw new BusinessException(ErrorCode.INVALID_IMAGE_MIME_TYPE);
     }
   }
 
   private static void validateResolution(BufferedImage image) {
     if (image.getWidth() > MAX_WIDTH || image.getHeight() > MAX_HEIGHT) {
-      throw new BusinessException(ErrorCode.INVALID_PROFILE_IMAGE);
+      throw new BusinessException(ErrorCode.INVALID_IMAGE_RESOLUTION);
     }
   }
 
