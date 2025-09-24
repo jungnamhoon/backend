@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 public class MemberService {
 
   private final MemberRepository memberRepository;
-  
+
   @Transactional
   public MemberInfoResponse getMemberInfo(String username) {
 
@@ -75,7 +75,7 @@ public class MemberService {
     if (member.getScore() == 0) {
       return null;
     }
-    return memberRepository.findRanking(member.getId(), member.getScore());
+    return memberRepository.findRanking(member.getScore());
   }
 
   private List<MemberProblemSolvedDTO> calculateSolvedProblemList(

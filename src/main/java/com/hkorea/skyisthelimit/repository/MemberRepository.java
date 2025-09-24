@@ -18,7 +18,6 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
   @Query("SELECT COUNT(m) + 1 " +
       "FROM Member m " +
-      "WHERE m.score > :score " +
-      "   OR (m.score = :score AND m.id < :id)")
-  Integer findRanking(@Param("id") Integer id, @Param("score") int score);
+      "WHERE m.score > :score")
+  Integer findRanking(@Param("score") int score);
 }
