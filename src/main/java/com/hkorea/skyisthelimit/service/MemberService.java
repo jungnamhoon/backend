@@ -83,6 +83,11 @@ public class MemberService {
 
     deleteOldProfileImage(member);
 
+    // 파일 크기 제한
+    // 파일 확장자, MIME 타입 검사
+    // 이미지 해상도 제한(너비/높이)
+    // 섬네일 화
+
     String imageUrl = uploadProfileImage(username, profileImage);
 
     member.setProfileImageUrl(imageUrl);
@@ -174,7 +179,9 @@ public class MemberService {
       InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException,
       ServerException, XmlParserException {
 
-    String objectName = "profile/" + username + "_" + Instant.now().toEpochMilli();
+    String objectName =
+        "profile/" + username + "_" + Instant.now().toEpochMilli() + "_" + file.getContentType();
+
     minioClient.putObject(
         PutObjectArgs.builder()
             .bucket(bucketName)
