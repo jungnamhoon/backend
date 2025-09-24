@@ -8,6 +8,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import net.coobird.thumbnailator.geometry.Positions;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -44,10 +45,11 @@ public class ImageUtils {
 
   public static byte[] createThumbnail(BufferedImage originalImage, String formatName)
       throws IOException {
-
     try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
       Thumbnails.of(originalImage)
           .size(THUMBNAIL_SIZE, THUMBNAIL_SIZE)
+          .crop(Positions.CENTER)        // 중앙 크롭
+          .outputQuality(1.0)            // 최대 화질
           .outputFormat(formatName)
           .toOutputStream(os);
       return os.toByteArray();
