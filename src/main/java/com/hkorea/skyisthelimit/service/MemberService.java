@@ -91,8 +91,8 @@ public class MemberService {
 
     // 3. 썸네일 생성
     byte[] thumbnail = ImageUtils.createThumbnail(profileImage);
-    
-    // 파일 업로드
+
+    // 4. 파일 업로드
     String imageUrl = uploadProfileImage(
         username, thumbnail, profileImage.getOriginalFilename(), profileImage.getContentType());
 
