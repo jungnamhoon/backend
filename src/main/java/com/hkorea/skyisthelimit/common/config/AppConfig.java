@@ -2,6 +2,7 @@ package com.hkorea.skyisthelimit.common.config;
 
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.minio.MinioClient;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -20,6 +21,15 @@ public class AppConfig {
 
   @Value("${swagger.server-url}")
   private String swaggerServerUrl;
+
+  @Value("${minio.url}")
+  private String minioUrl;
+
+  @Value("${minio.access-key}")
+  private String minioAccessKey;
+
+  @Value("${minio.secret-key}")
+  private String minioSecretKey;
 
   @PersistenceContext
   private EntityManager em;
@@ -67,6 +77,14 @@ public class AppConfig {
         .addSecurityItem(securityRequirement)
         .addSecurityItem(basicSecurityRequirement)
         .servers(List.of(server));
+  }
+
+  @Bean
+  public MinioClient minioClient() {
+    return MinioClient.builder()
+        .endpoint(minioUrl)
+        .credentials(minioAccessKey, minioSecretKey)
+        .build();
   }
 
 }

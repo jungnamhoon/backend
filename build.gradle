@@ -39,6 +39,8 @@ dependencies {
 
     implementation 'org.springframework.session:spring-session-core'
 
+    implementation 'io.minio:minio:8.5.9'
+
     //QueryDsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
