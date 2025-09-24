@@ -55,7 +55,11 @@ public class ImageUtils {
   }
 
   private static void validateFileSize(long fileSize) {
+
+    log.info("file size : {} max file size : {}", fileSize, MAX_FILE_SIZE);
+
     if (fileSize > MAX_FILE_SIZE) {
+      log.info("file size : {} max file size : {}", fileSize, MAX_FILE_SIZE);
       throw new BusinessException(ErrorCode.INVALID_IMAGE_SIZE);
     }
   }
@@ -69,7 +73,7 @@ public class ImageUtils {
   private static void validateResolution(BufferedImage image) {
 
     log.info("image resolution {} x {}", image.getWidth(), image.getHeight());
-    
+
     if (image.getWidth() > MAX_WIDTH || image.getHeight() > MAX_HEIGHT) {
       throw new BusinessException(ErrorCode.INVALID_IMAGE_RESOLUTION);
     }
