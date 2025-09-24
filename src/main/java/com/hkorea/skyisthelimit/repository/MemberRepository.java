@@ -3,6 +3,8 @@ package com.hkorea.skyisthelimit.repository;
 import com.hkorea.skyisthelimit.entity.Member;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -13,4 +15,10 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
   Boolean existsByNickname(String nickname);
 
   Optional<Member> findByUsername(String username);
+
+  @Query("SELECT COUNT(m) + 1 " +
+      "FROM Member m " +
+      "WHERE m.score > :score " +
+      "   OR (m.score = :score AND m.id < :id)")
+  Integer findRanking(@Param("id") Integer id, @Param("score") int score);
 }

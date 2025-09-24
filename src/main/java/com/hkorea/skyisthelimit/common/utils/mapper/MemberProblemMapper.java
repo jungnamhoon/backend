@@ -11,12 +11,10 @@ import com.hkorea.skyisthelimit.dto.study.response.StudySummaryResponse;
 import com.hkorea.skyisthelimit.entity.MemberProblem;
 import com.hkorea.skyisthelimit.entity.Study;
 import com.hkorea.skyisthelimit.entity.embeddable.ProblemTag;
-import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MemberProblemMapper {
@@ -79,7 +77,7 @@ public class MemberProblemMapper {
         .problemRank(memberProblem.getProblem().getRank())
         .build();
   }
-  
+
   public static List<MemberProblemTagCountResponse> toMemberProblemTagCountResponseList(
       List<MemberProblem> memberProblemList) {
 
@@ -108,25 +106,14 @@ public class MemberProblemMapper {
   }
 
   public static List<MemberProblemSolvedDTO> toMemberProblemSolvedDTOList(
-      Set<MemberProblem> memberProblems) {
-
-    return memberProblems.stream()
-        .filter(mp ->
-            mp.getStatus() == MemberProblemStatus.SOLVED
-                || mp.getStatus() == MemberProblemStatus.MULTI_TRY)
+      List<MemberProblem> memberProblemSolvedList) {
+    return memberProblemSolvedList.stream()
         .map(MemberProblemMapper::toMemberProblemSolvedDTO)
         .toList();
   }
 
   public static List<MemberProblemSolvedCountByDayDTO> toMemberProblemSolvedCountByDayDTOList(
-      Set<MemberProblem> memberProblems) {
-
-    Map<LocalDate, Integer> dateToSolvedCountMap = memberProblems.stream()
-        .filter(mp -> mp.getSolvedDate() != null)
-        .collect(Collectors.groupingBy(
-            MemberProblem::getSolvedDate,
-            Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
-        ));
+      Map<LocalDate, Integer> dateToSolvedCountMap) {
 
     return dateToSolvedCountMap.entrySet().stream()
         .map(entry -> new MemberProblemSolvedCountByDayDTO(entry.getKey(), entry.getValue()))
