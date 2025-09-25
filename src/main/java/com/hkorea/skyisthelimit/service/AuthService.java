@@ -15,6 +15,7 @@ import com.hkorea.skyisthelimit.repository.MemberRepository;
 import jakarta.transaction.Transactional;
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,6 +30,9 @@ public class AuthService {
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
   private final JwtHelper jwtUtil;
 
+  @Value("${minio.endpoint}")
+  private String minioEndpoint;
+
   @Transactional
   public void signUp(SignUpRequest requestDTO) {
 
@@ -41,6 +45,7 @@ public class AuthService {
     }
 
     Member member = Member.create(requestDTO);
+    member.setProfileImageUrl(minioEndpoint + "/skyisthelimit/profile/basic-profile.png");
 
     memberRepository.save(member);
   }
