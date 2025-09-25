@@ -38,10 +38,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -171,8 +173,9 @@ public class MemberService {
       return;
     }
 
-    String oldObjectName = oldUrl.substring(bucketName.length() + 1);
-
+    String baseUrl = "https://skyisthelimit.kro.kr/files/" + bucketName + "/";
+    String oldObjectName = oldUrl.replace(baseUrl, "");
+    
     if (isHaveImage(oldObjectName)) {
       minioClient.removeObject(
           RemoveObjectArgs.builder()
