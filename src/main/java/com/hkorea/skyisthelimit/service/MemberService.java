@@ -52,6 +52,9 @@ public class MemberService {
   @Value("${minio.bucket}")
   private String bucketName;
 
+  @Value("${minio.endpoint}")
+  private String minioEndpoint;
+
   @Transactional
   public MemberInfoResponse getMemberInfo(String username) {
 
@@ -201,7 +204,7 @@ public class MemberService {
       );
     }
 
-    return bucketName + "/" + objectName;
+    return minioEndpoint + "/" + bucketName + "/" + objectName;
   }
 
   private boolean isHaveImage(String fileName) {
