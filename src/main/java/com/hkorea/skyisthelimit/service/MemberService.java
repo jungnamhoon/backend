@@ -16,10 +16,7 @@ import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.entity.MemberProblem;
 import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import com.hkorea.skyisthelimit.repository.MemberRepository;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
-import io.minio.StatObjectArgs;
+import com.hkorea.skyisthelimit.service.enums.ImageType;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
 import io.minio.errors.InternalException;
@@ -27,11 +24,9 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import jakarta.transaction.Transactional;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +34,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,13 +43,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberService {
 
   private final MemberRepository memberRepository;
-  private final MinioClient minioClient;
-
-  @Value("${minio.bucket}")
-  private String bucketName;
-
-  @Value("${minio.endpoint}")
-  private String minioEndpoint;
+  private final MinioService minioService;
 
   @Transactional
   public MemberInfoResponse getMemberInfo(String username) {
@@ -89,7 +77,7 @@ public class MemberService {
     }
 
     // 1. 기존 이미지 삭제
-    deleteOldProfileImage(member);
+    minioService.deleteOldImage(member.getProfileImageUrl());
 
     // 2. 이미지 검증
     ImageUtils.validateImage(profileImage);
@@ -98,8 +86,9 @@ public class MemberService {
     byte[] thumbnail = ImageUtils.createThumbnail(profileImage);
 
     // 4. 파일 업로드
-    String imageUrl = uploadProfileImage(
-        username, thumbnail, profileImage.getOriginalFilename(), profileImage.getContentType());
+    String imageUrl = minioService.uploadImage(
+        ImageType.PERSONAL, member.getUsername(), thumbnail, profileImage.getOriginalFilename(),
+        profileImage.getContentType());
 
     member.setProfileImageUrl(imageUrl);
 
@@ -160,63 +149,6 @@ public class MemberService {
         ));
 
     return MemberProblemMapper.toMemberProblemSolvedCountByDayDTOList(dateToSolvedCountMap);
-  }
-
-  private void deleteOldProfileImage(Member member)
-      throws ErrorResponseException, InsufficientDataException, InternalException,
-      InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException,
-      ServerException, XmlParserException {
-
-    String oldUrl = member.getProfileImageUrl();
-
-    if (oldUrl == null || oldUrl.isEmpty()) {
-      return;
-    }
-
-    String baseUrl = "https://skyisthelimit.kro.kr/files/" + bucketName + "/";
-    String oldObjectName = oldUrl.replace(baseUrl, "");
-    
-    if (isHaveImage(oldObjectName)) {
-      minioClient.removeObject(
-          RemoveObjectArgs.builder()
-              .bucket(bucketName)
-              .object(oldObjectName)
-              .build()
-      );
-    }
-  }
-
-  private String uploadProfileImage(String username, byte[] thumbnail, String originalFilename,
-      String contentType)
-      throws ErrorResponseException, InsufficientDataException, InternalException,
-      InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException,
-      ServerException, XmlParserException {
-
-    String objectName =
-        "profile/" + username + "_" + Instant.now().toEpochMilli() + "_"
-            + originalFilename;
-
-    try (ByteArrayInputStream bis = new ByteArrayInputStream(thumbnail)) {
-      minioClient.putObject(
-          PutObjectArgs.builder()
-              .bucket(bucketName)
-              .object(objectName)
-              .stream(bis, thumbnail.length, -1)
-              .contentType(contentType)
-              .build()
-      );
-    }
-
-    return minioEndpoint + "/" + bucketName + "/" + objectName;
-  }
-
-  private boolean isHaveImage(String fileName) {
-    try {
-      minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(fileName).build());
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
   }
 
 }

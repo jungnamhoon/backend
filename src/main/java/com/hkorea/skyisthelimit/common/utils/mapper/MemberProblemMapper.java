@@ -7,9 +7,7 @@ import com.hkorea.skyisthelimit.dto.memberproblem.request.SolveResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.MemberProblemResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.NoteResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.RandomProblemResponse;
-import com.hkorea.skyisthelimit.dto.study.response.StudySummaryResponse;
 import com.hkorea.skyisthelimit.entity.MemberProblem;
-import com.hkorea.skyisthelimit.entity.Study;
 import com.hkorea.skyisthelimit.entity.embeddable.ProblemTag;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -118,12 +116,6 @@ public class MemberProblemMapper {
     return dateToSolvedCountMap.entrySet().stream()
         .map(entry -> new MemberProblemSolvedCountByDayDTO(entry.getKey(), entry.getValue()))
         .sorted(Comparator.comparing(MemberProblemSolvedCountByDayDTO::getDate))
-        .toList();
-  }
-
-  public static List<StudySummaryResponse> toStudySummaryResponseList(List<Study> studyList) {
-    return studyList.stream()
-        .map(StudyMapper::toStudySummaryResponse)
         .toList();
   }
 

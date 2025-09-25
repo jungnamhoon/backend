@@ -5,6 +5,7 @@ import com.hkorea.skyisthelimit.dto.study.response.StudyCreateResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyInfoResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudySummaryResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyUpdateResponse;
+import com.hkorea.skyisthelimit.dto.study.response.ThumbnailUpdateResponse;
 import com.hkorea.skyisthelimit.entity.MemberStudy;
 import com.hkorea.skyisthelimit.entity.Study;
 import java.util.List;
@@ -19,12 +20,12 @@ public class StudyMapper {
   public static StudyCreateResponse toStudyCreateResponse(Study study) {
     return StudyCreateResponse.builder()
         .studyId(study.getId())
+        .thumbnailUrl(study.getThumbnailUrl())
         .name(study.getName())
         .startDate(study.getStartDate())
         .endDate(study.getEndDate())
         .maxMemberCount(study.getMaxMemberCount())
         .dailyProblemCount(study.getDailyProblemCount())
-        .thumbnailUrl(study.getThumbnailUrl())
         .description(study.getDescription())
         .minRank(study.getMinRank())
         .maxRank(study.getMaxRank())
@@ -44,6 +45,7 @@ public class StudyMapper {
         .maxRank(study.getMaxRank())
         .dailyProblemCount(study.getDailyProblemCount())
         .description(study.getDescription())
+        .status(study.getStatus())
         .build();
   }
 
@@ -94,5 +96,18 @@ public class StudyMapper {
         .minLevel(study.getMinLevel())
         .maxLevel(study.getMaxLevel())
         .build();
+  }
+
+  public static ThumbnailUpdateResponse toThumbnailUpdateResponse(Study study) {
+
+    return ThumbnailUpdateResponse.builder()
+        .imageUrl(study.getThumbnailUrl())
+        .build();
+  }
+
+  public static List<StudySummaryResponse> toStudySummaryResponseList(List<Study> studyList) {
+    return studyList.stream()
+        .map(StudyMapper::toStudySummaryResponse)
+        .toList();
   }
 }

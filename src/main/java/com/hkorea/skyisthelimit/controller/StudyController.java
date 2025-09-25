@@ -14,6 +14,7 @@ import com.hkorea.skyisthelimit.dto.study.response.StudyCreateResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyInfoResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudySummaryResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyUpdateResponse;
+import com.hkorea.skyisthelimit.dto.study.response.ThumbnailUpdateResponse;
 import com.hkorea.skyisthelimit.service.MemberStudyService;
 import com.hkorea.skyisthelimit.service.StudyService;
 import jakarta.validation.Valid;
@@ -28,9 +29,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/studies")
@@ -72,6 +76,21 @@ public class StudyController implements StudyControllerDocs {
 
     StudyUpdateResponse responseDTO = studyService.updateStudy(studyId, token.getClaim("username"),
         requestDTO);
+
+    return ApiResponse.of(SuccessCode.OK, responseDTO);
+  }
+
+  @PutMapping(value = "/{studyId}/thumbnail-image", consumes = {"multipart/form-data"})
+  public ResponseEntity<ApiResponse<ThumbnailUpdateResponse>> updateThumbnail(
+      @PathVariable Integer studyId,
+      @AuthenticationPrincipal Jwt token,
+      @RequestPart("file") MultipartFile thumbnailImage) throws Exception {
+
+    ThumbnailUpdateResponse responseDTO = studyService.updateThumbnail(
+        studyId,
+        token.getClaim("username"),
+        thumbnailImage
+    );
 
     return ApiResponse.of(SuccessCode.OK, responseDTO);
   }

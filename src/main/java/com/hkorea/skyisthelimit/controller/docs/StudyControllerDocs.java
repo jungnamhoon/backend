@@ -12,6 +12,7 @@ import com.hkorea.skyisthelimit.dto.study.response.StudyCreateResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyInfoResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudySummaryResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyUpdateResponse;
+import com.hkorea.skyisthelimit.dto.study.response.ThumbnailUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +24,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Study", description = "스터디 관련 API - JWT 토큰 필요")
 public interface StudyControllerDocs {
@@ -83,6 +86,26 @@ public interface StudyControllerDocs {
       @RequestBody StudyUpdateRequest requestDTO
   );
 
+  @Operation(
+      summary = "스터디 썸네일 이미지 수정",
+      description = "특정 스터디의 썸네일 이미지를 업로드 및 수정합니다. " +
+          "Multipart/form-data 형식으로 파일을 전송해야 합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "썸네일 이미지 수정 성공"
+      )
+  })
+  ResponseEntity<ApiResponse<ThumbnailUpdateResponse>> updateThumbnail(
+      @PathVariable Integer studyId,
+      @AuthenticationPrincipal Jwt token,
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "업로드할 썸네일 이미지 (jpg, png 등)",
+          required = true
+      )
+      @RequestPart("file") MultipartFile thumbnailImage
+  ) throws Exception;
 
   @Operation(
       summary = "스터디 참가 요청",

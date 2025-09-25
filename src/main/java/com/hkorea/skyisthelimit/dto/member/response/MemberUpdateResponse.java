@@ -14,11 +14,5 @@ public class MemberUpdateResponse {
       example = "elephant1"
   )
   private String newNickname;
-
-  @Schema(
-      title = "새 프로필 이미지 URL",
-      description = "회원 정보 수정 후 적용된 새 프로필 이미지 URL",
-      example = "https://cdn.example.com/profiles/user1.png"
-  )
-  private String newProfileImageUrl;
+  
 }

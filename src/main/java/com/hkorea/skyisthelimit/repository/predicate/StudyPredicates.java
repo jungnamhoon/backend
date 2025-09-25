@@ -4,6 +4,7 @@ import com.hkorea.skyisthelimit.entity.QStudy;
 import com.hkorea.skyisthelimit.entity.enums.StudyStatus;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import java.time.LocalDate;
 import java.util.List;
 
 public class StudyPredicates {
@@ -26,7 +27,22 @@ public class StudyPredicates {
     if (statuses == null || statuses.isEmpty()) {
       return Expressions.asBoolean(true).isTrue();
     }
-    return study.status.in(statuses);
+
+    LocalDate today = LocalDate.now();
+
+    BooleanExpression expr = null;
+
+    for (StudyStatus status : statuses) {
+      BooleanExpression condition = switch (status) {
+        case BEFORE_START -> study.startDate.gt(today);
+        case ONGOING -> study.startDate.loe(today).and(study.endDate.goe(today));
+        case ENDED -> study.endDate.lt(today);
+      };
+
+      expr = expr == null ? condition : expr.or(condition);
+    }
+
+    return expr;
   }
 
   public static BooleanExpression search(String keyword) {

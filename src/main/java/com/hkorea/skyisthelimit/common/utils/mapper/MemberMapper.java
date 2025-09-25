@@ -33,7 +33,6 @@ public class MemberMapper {
   public static MemberUpdateResponse toMemberUpdateResponse(Member member) {
     return MemberUpdateResponse.builder()
         .newNickname(member.getNickname())
-        .newProfileImageUrl(member.getProfileImageUrl())
         .build();
   }
 

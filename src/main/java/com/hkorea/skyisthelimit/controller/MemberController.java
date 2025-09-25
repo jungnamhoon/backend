@@ -15,7 +15,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -51,8 +51,8 @@ public class MemberController implements MemberControllerDocs {
         memberService.updateMember(token.getClaim("username"), requestDTO));
   }
 
-  @PostMapping(value = "/me/profile-image", consumes = {"multipart/form-data"})
-  public ResponseEntity<ApiResponse<ProfileUpdateResponse>> uploadProfileImage(
+  @PutMapping(value = "/me/profile-image", consumes = {"multipart/form-data"})
+  public ResponseEntity<ApiResponse<ProfileUpdateResponse>> updateProfileImage(
       @AuthenticationPrincipal Jwt token,
       @RequestPart("file") MultipartFile profileImage) throws Exception {
 

@@ -19,6 +19,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -85,6 +86,19 @@ public class Study {
 
   @Column(name = "last_streak_updated_date")
   private LocalDate lastStreakUpdatedDate;
+
+  @Transient
+  public StudyStatus getStatus() {
+    LocalDate today = LocalDate.now();
+
+    if (today.isBefore(startDate)) {
+      return StudyStatus.BEFORE_START;
+    } else if (!today.isAfter(endDate)) {
+      return StudyStatus.ONGOING;
+    } else {
+      return StudyStatus.ENDED;
+    }
+  }
 
   public void update(StudyUpdateRequest requestDTO) {
     if (requestDTO.getName() != null && !requestDTO.getName().isBlank()) {

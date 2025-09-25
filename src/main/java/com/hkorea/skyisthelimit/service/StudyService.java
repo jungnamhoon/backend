@@ -2,8 +2,8 @@ package com.hkorea.skyisthelimit.service;
 
 import com.hkorea.skyisthelimit.common.exception.BusinessException;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
+import com.hkorea.skyisthelimit.common.utils.ImageUtils;
 import com.hkorea.skyisthelimit.common.utils.QueryDSLHelper;
-import com.hkorea.skyisthelimit.common.utils.mapper.MemberProblemMapper;
 import com.hkorea.skyisthelimit.common.utils.mapper.StudyMapper;
 import com.hkorea.skyisthelimit.common.utils.mapper.StudyProblemMapper;
 import com.hkorea.skyisthelimit.dto.criteria.PageableCriteria;
@@ -15,6 +15,7 @@ import com.hkorea.skyisthelimit.dto.study.response.StudyCreateResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyInfoResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudySummaryResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyUpdateResponse;
+import com.hkorea.skyisthelimit.dto.study.response.ThumbnailUpdateResponse;
 import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.entity.MemberStudy;
 import com.hkorea.skyisthelimit.entity.Problem;
@@ -23,17 +24,29 @@ import com.hkorea.skyisthelimit.entity.Study;
 import com.hkorea.skyisthelimit.entity.StudyProblem;
 import com.hkorea.skyisthelimit.entity.embeddable.DailyProblem;
 import com.hkorea.skyisthelimit.repository.StudyRepository;
+import com.hkorea.skyisthelimit.service.enums.ImageType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import io.minio.errors.ErrorResponseException;
+import io.minio.errors.InsufficientDataException;
+import io.minio.errors.InternalException;
+import io.minio.errors.InvalidResponseException;
+import io.minio.errors.ServerException;
+import io.minio.errors.XmlParserException;
 import jakarta.transaction.Transactional;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Service
@@ -44,6 +57,10 @@ public class StudyService {
   private final MemberService memberService;
   private final QueryDSLHelper queryDSLService;
   private final ProblemService problemService;
+  private final MinioService minioService;
+
+  @Value("${minio.endpoint}")
+  private String minioEndpoint;
 
   @Transactional
   public Page<StudySummaryResponse> getStudyPage(PageableCriteria<QStudy> criteria) {
@@ -59,7 +76,7 @@ public class StudyService {
 
     long total = queryDSLService.fetchTotalCount(study, predicate);
 
-    List<StudySummaryResponse> studySummaryResponseList = MemberProblemMapper.toStudySummaryResponseList(
+    List<StudySummaryResponse> studySummaryResponseList = StudyMapper.toStudySummaryResponseList(
         studies);
 
     return new PageImpl<>(studySummaryResponseList, pageable, total);
@@ -76,6 +93,7 @@ public class StudyService {
 
     List<StudyProblem> studyProblemListSolvedByAll = getStudyProblemListSolvedByAll(studyId);
     studyProblemListSolvedByAll.forEach(StudyProblem::markToSolved);
+
     int newSolvedCount = studyProblemListSolvedByAll.size();
     study.incrementTotalSolvedProblemsCount(newSolvedCount);
 
@@ -105,11 +123,47 @@ public class StudyService {
   }
 
   @Transactional
+  public ThumbnailUpdateResponse updateThumbnail(Integer studyId, String username,
+      MultipartFile studyProfileImage)
+
+      throws ErrorResponseException, InsufficientDataException, InternalException,
+      InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException,
+      ServerException, XmlParserException {
+
+    Study study = getStudy(studyId);
+
+    validateAdmin(username, study);
+
+    if (studyProfileImage == null || studyProfileImage.isEmpty()) {
+      return StudyMapper.toThumbnailUpdateResponse(study);
+    }
+
+    // 1. 기존 이미지 삭제
+    minioService.deleteOldImage(study.getThumbnailUrl());
+
+    ImageUtils.validateImage(studyProfileImage);
+
+    byte[] thumbnail = ImageUtils.createThumbnail(studyProfileImage);
+
+    String imageUrl = minioService.uploadImage(
+        ImageType.STUDY,
+        Integer.toString(study.getId()),
+        thumbnail,
+        studyProfileImage.getOriginalFilename(),
+        studyProfileImage.getContentType());
+
+    study.setThumbnailUrl(imageUrl);
+
+    return StudyMapper.toThumbnailUpdateResponse(study);
+  }
+
+  @Transactional
   public StudyCreateResponse createStudy(String username, StudyCreateRequest requestDTO) {
 
     Member host = memberService.getMember(username);
 
     Study study = requestDTO.toEntity(host);
+    study.setThumbnailUrl(minioEndpoint + "/skyisthelimit/study/basic-thumbnail.png");
 
     studyRepository.save(study);
 

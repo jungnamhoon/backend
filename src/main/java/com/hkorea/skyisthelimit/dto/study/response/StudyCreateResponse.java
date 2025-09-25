@@ -13,6 +13,9 @@ public class StudyCreateResponse {
   @Schema(description = "스터디 고유 ID", example = "1")
   private Integer studyId;
 
+  @Schema(description = "스터디 기본 썸네일 Url", example = "https://skyisthelimit.kro.kr/files/skyisthelimit/study/basic-profile.png")
+  private String thumbnailUrl;
+
   @Schema(description = "스터디 이름", example = "백준 스터디")
   private String name;
 
@@ -27,9 +30,6 @@ public class StudyCreateResponse {
 
   @Schema(description = "하루에 등록되는 문제 개수", example = "3")
   private Integer dailyProblemCount;
-
-  @Schema(description = "스터디 썸네일 이미지 URL", example = "https://example.com/study.png")
-  private String thumbnailUrl;
 
   @Schema(description = "스터디 설명", example = "매일 알고리즘 문제를 풀고 리뷰하는 스터디입니다.")
   private String description;

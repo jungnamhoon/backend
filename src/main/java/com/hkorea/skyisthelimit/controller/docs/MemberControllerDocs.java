@@ -4,6 +4,7 @@ import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.dto.member.request.MemberUpdateRequest;
 import com.hkorea.skyisthelimit.dto.member.response.MemberInfoResponse;
 import com.hkorea.skyisthelimit.dto.member.response.MemberUpdateResponse;
+import com.hkorea.skyisthelimit.dto.member.response.ProfileUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Member", description = "회원 관련 API - JWT 토큰 필요")
 public interface MemberControllerDocs {
@@ -52,5 +55,26 @@ public interface MemberControllerDocs {
   })
   ResponseEntity<ApiResponse<MemberUpdateResponse>> updateMe(Jwt token,
       @RequestBody MemberUpdateRequest requestDTO);
+
+
+  @Operation(
+      summary = "프로필 이미지 변경",
+      description = "로그인한 사용자의 프로필 이미지를 업로드 및 변경합니다. " +
+          "Multipart/form-data 형식으로 파일을 전송해야 합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "프로필 이미지 수정 성공"
+      )
+  })
+  ResponseEntity<ApiResponse<ProfileUpdateResponse>> updateProfileImage(
+      @AuthenticationPrincipal Jwt token,
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "업로드할 프로필 이미지 (jpg, png 등)",
+          required = true
+      )
+      @RequestPart("file") MultipartFile profileImage
+  ) throws Exception;
 
 }

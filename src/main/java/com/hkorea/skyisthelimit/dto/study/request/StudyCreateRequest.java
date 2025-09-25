@@ -36,9 +36,6 @@ public class StudyCreateRequest {
   @NotNull
   private Integer dailyProblemCount;
 
-  @Schema(description = "스터디 썸네일 이미지 URL", example = "https://example.com/study.png")
-  private String thumbnailUrl;
-
   @Schema(description = "스터디 설명", example = "매일 알고리즘 문제를 풀고 리뷰하는 스터디입니다.")
   private String description;
 
@@ -58,7 +55,6 @@ public class StudyCreateRequest {
         .description(this.description)
         .maxMemberCount(this.maxMemberCount)
         .dailyProblemCount(this.dailyProblemCount)
-        .thumbnailUrl(this.thumbnailUrl)
         .currentMemberCount(1)
         .status(StudyStatus.BEFORE_START)
         .minLevel(this.minLevel)

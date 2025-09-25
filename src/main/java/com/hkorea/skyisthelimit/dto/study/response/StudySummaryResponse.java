@@ -1,6 +1,7 @@
 package com.hkorea.skyisthelimit.dto.study.response;
 
 import com.hkorea.skyisthelimit.entity.enums.ProblemRank;
+import com.hkorea.skyisthelimit.entity.enums.StudyStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import lombok.Builder;
@@ -43,5 +44,8 @@ public class StudySummaryResponse {
 
   @Schema(description = "스터디 설명", example = "매일 알고리즘 문제를 풀고 리뷰하는 스터디입니다.")
   private String description;
+
+  @Schema(description = "스터디 상태", example = "BEFORE_START")
+  private StudyStatus status;
 
 }
