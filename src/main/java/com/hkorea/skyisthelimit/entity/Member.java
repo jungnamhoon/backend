@@ -67,9 +67,7 @@ public class Member {
   }
 
   public void update(MemberUpdateRequest requestDTO) {
-
     this.nickname = requestDTO.getNickname();
-    this.profileImageUrl = requestDTO.getProfileImageUrl();
   }
 
   public void recordNewProblemSolved(MemberProblem memberProblem) {
@@ -109,7 +107,7 @@ public class Member {
   private void addMemberProblem(MemberProblem memberProblem) {
     this.memberProblems.add(memberProblem);
   }
-  
+
   private void incrementScore(Problem problem) {
     this.score += problem.getLevel();
   }

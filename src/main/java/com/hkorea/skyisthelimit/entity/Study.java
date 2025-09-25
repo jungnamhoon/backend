@@ -105,9 +105,6 @@ public class Study {
     if (requestDTO.getDailyProblemCount() != null) {
       this.dailyProblemCount = requestDTO.getDailyProblemCount();
     }
-    if (requestDTO.getThumbnailUrl() != null && !requestDTO.getThumbnailUrl().isBlank()) {
-      this.thumbnailUrl = requestDTO.getThumbnailUrl();
-    }
     if (requestDTO.getMinLevel() != null) {
       this.minLevel = requestDTO.getMinLevel();
     }
