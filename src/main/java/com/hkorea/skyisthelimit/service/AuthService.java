@@ -28,7 +28,7 @@ public class AuthService {
   private final MemberRepository memberRepository;
   private final RegisterRepository registerRepository;
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
-  private final JwtHelper jwtUtil;
+  private final JwtHelper jwtHelper;
 
   @Value("${minio.endpoint}")
   private String minioEndpoint;
@@ -64,8 +64,8 @@ public class AuthService {
     String username = userDetails.getUsername();
     Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
-    String accessToken = jwtUtil.generateAccessToken(username, authorities);
-    String refreshToken = jwtUtil.generateRefreshToken(username, authorities);
+    String accessToken = jwtHelper.generateAccessToken(username, authorities);
+    String refreshToken = jwtHelper.generateRefreshToken(username, authorities);
 
     return JwtResponse.builder()
         .accessToken(accessToken)
