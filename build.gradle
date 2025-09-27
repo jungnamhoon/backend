@@ -26,8 +26,11 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
@@ -40,7 +43,7 @@ dependencies {
     implementation 'org.springframework.session:spring-session-core'
 
     implementation 'io.minio:minio:8.5.9'
-    
+
     implementation 'net.coobird:thumbnailator:0.4.19'
 
     //QueryDsl

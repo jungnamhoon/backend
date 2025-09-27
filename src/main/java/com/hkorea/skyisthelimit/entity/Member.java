@@ -1,9 +1,7 @@
 package com.hkorea.skyisthelimit.entity;
 
-import static com.hkorea.skyisthelimit.common.utils.PasswordUtils.encode;
 import static com.hkorea.skyisthelimit.controller.TodayController.getToday;
 
-import com.hkorea.skyisthelimit.dto.auth.request.SignUpRequest;
 import com.hkorea.skyisthelimit.dto.member.request.MemberUpdateRequest;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -37,10 +35,14 @@ public class Member {
 
   @Column(unique = true, nullable = false)
   private String username;
+  private String name;
+  private String email;
+  private String role;
+
+
   private String password;
   private String profileImageUrl;
   private String nickname;
-  private String role;
   private int score;
   private Integer ranking;
   private int totalSolvedProblems;
@@ -55,16 +57,6 @@ public class Member {
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private Set<MemberStudy> memberStudies = new HashSet<>();
-
-  public static Member create(SignUpRequest requestDTO) {
-
-    return Member.builder()
-        .username(requestDTO.getUsername())
-        .password(encode(requestDTO.getPassword()))
-        .nickname(requestDTO.getNickname())
-        .role("ROLE_USER")
-        .build();
-  }
 
   public void update(MemberUpdateRequest requestDTO) {
     this.nickname = requestDTO.getNickname();
