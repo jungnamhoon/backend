@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -26,7 +27,14 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
     http
-        .csrf(AbstractHttpConfigurer::disable);
+        .csrf(AbstractHttpConfigurer::disable)
+        .cors(cors -> cors.configurationSource(request -> {
+          CorsConfiguration config = new CorsConfiguration();
+          config.addAllowedOrigin("https://your-allowed-origin.com");
+          config.addAllowedMethod("*");
+          config.addAllowedHeader("*");
+          return config;
+        }));
 
     http
         .formLogin(AbstractHttpConfigurer::disable);
