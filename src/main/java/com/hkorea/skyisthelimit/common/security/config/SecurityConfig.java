@@ -19,6 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+  //
   private final CustomOAuth2UserService customOAuth2UserService;
   private final CustomSuccessHandler customSuccessHandler;
   private final JwtFilter jwtFilter;
