@@ -189,13 +189,9 @@ public class StudyService {
 
     String[] parts = base64Image.split(",");
 
-//    log.info("base64Image : {}", base64Image);
-
     String imageString = parts[1];
-//    log.info("imageString : {}", imageString);
 
     String mimeType = parts[0].split(":")[1].split(";")[0];
-//    log.info("mimeType : {}", mimeType);
 
     byte[] decodedBytes = Base64.decodeBase64(imageString);
 
