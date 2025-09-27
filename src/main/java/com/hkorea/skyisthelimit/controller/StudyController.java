@@ -59,7 +59,7 @@ public class StudyController implements StudyControllerDocs {
       @AuthenticationPrincipal Jwt token, @Valid @RequestBody StudyCreateRequest requestDTO)
       throws Exception {
 
-    log.info("========== {}", String.valueOf(token.getClaim("username")));
+//    log.info("========== {}", String.valueOf(token.getClaim("username")));
     StudyCreateResponse responseDTO = studyService.createStudy(token.getClaim("username"),
         requestDTO);
     return ApiResponse.of(SuccessCode.OK, responseDTO);

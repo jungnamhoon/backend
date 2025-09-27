@@ -200,7 +200,7 @@ public class StudyService {
         ImageType.STUDY,
         Integer.toString(study.getId()),
         decodedBytes,
-        "thumbnail" + getExtension(mimeType),
+        "thumbnail." + getExtension(mimeType),
         mimeType
     );
   }
