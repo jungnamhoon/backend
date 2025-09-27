@@ -190,25 +190,6 @@ public class StudyService {
 
     String mimeType = parts[0].split(":")[1].split(";")[0];
 
-//    String imageString;
-//    String mimeType;
-
-//    if (base64Image.contains(",")) {
-//      // data URI scheme 포함된 경우
-//      String[] parts = base64Image.split(",");
-//
-//      log.info("part0 {}", parts[0]);
-//      log.info("part1 {}", parts[1]);
-//
-//      imageString = parts[1];
-//      mimeType = parts[0].split(":")[1].split(";")[0];
-//    } else {
-//
-//      imageString = base64Image;
-//      log.info("base64Image {}", base64Image);
-//      mimeType = "image/png";
-//    }
-
     byte[] decodedBytes = Base64.decodeBase64(imageString);
 
     return minioService.uploadImage(
