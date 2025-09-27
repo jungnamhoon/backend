@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -158,17 +159,55 @@ public class StudyService {
   }
 
   @Transactional
-  public StudyCreateResponse createStudy(String username, StudyCreateRequest requestDTO) {
+  public StudyCreateResponse createStudy(String username, StudyCreateRequest requestDTO)
+      throws ErrorResponseException, InsufficientDataException, InternalException,
+      InvalidKeyException, InvalidResponseException, IOException,
+      NoSuchAlgorithmException, ServerException, XmlParserException {
 
     Member host = memberService.getMember(username);
 
     Study study = requestDTO.toEntity(host);
-    study.setThumbnailUrl(minioEndpoint + "/skyisthelimit/study/basic-thumbnail.png");
+
+    if (requestDTO.getThumbnailData() != null) {
+      String thumbnailUrl = saveThumbnailToMinio(requestDTO.getThumbnailData(), study);
+      study.setThumbnailUrl(thumbnailUrl);
+    }
 
     studyRepository.save(study);
 
     return StudyMapper.toStudyCreateResponse(study);
   }
+
+  private String saveThumbnailToMinio(String base64Image, Study study)
+      throws ErrorResponseException, InsufficientDataException, InternalException,
+      InvalidKeyException, InvalidResponseException, IOException,
+      NoSuchAlgorithmException, ServerException, XmlParserException {
+
+    String[] parts = base64Image.split(",");
+    String imageString = parts[1];
+    String mimeType = parts[0].split(":")[1].split(";")[0];
+
+    byte[] decodedBytes = Base64.decodeBase64(imageString);
+
+    return minioService.uploadImage(
+        ImageType.STUDY,
+        Integer.toString(study.getId()),
+        decodedBytes,
+        "thumbnail" + getExtension(mimeType),
+        mimeType
+    );
+  }
+
+  private String getExtension(String mimeType) {
+    if (mimeType.equals("image/png")) {
+      return "png";
+    } else if (mimeType.equals("image/jpeg")) {
+      return "jpg";
+    } else {
+      return "jpg";
+    }
+  }
+
 
   @Transactional
   public Set<DailyProblemCreateResponse> createDailyProblems(Integer studyId, String username,
