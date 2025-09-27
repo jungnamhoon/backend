@@ -168,12 +168,8 @@ public class StudyService {
 
     Member host = memberService.getMember(username);
 
-    log.info("========== {}", host.getUsername());
-
     Study study = requestDTO.toEntity(host);
     studyRepository.save(study);
-
-    log.info("========== {}", study.getId());
 
     if (requestDTO.getThumbnailData() != null) {
       String thumbnailUrl = saveThumbnailToMinio(requestDTO.getThumbnailData(), study);
@@ -204,17 +200,6 @@ public class StudyService {
         mimeType
     );
   }
-
-  private String getExtension(String mimeType) {
-    if (mimeType.equals("image/png")) {
-      return "png";
-    } else if (mimeType.equals("image/jpeg")) {
-      return "jpg";
-    } else {
-      return "jpg";
-    }
-  }
-
 
   @Transactional
   public Set<DailyProblemCreateResponse> createDailyProblems(Integer studyId, String username,
@@ -254,6 +239,16 @@ public class StudyService {
           return StudyProblemMapper.toDailyProblemCreateResponse(dailyProblem);
         })
         .collect(Collectors.toSet());
+  }
+
+  private String getExtension(String mimeType) {
+    if (mimeType.equals("image/png")) {
+      return "png";
+    } else if (mimeType.equals("image/jpeg")) {
+      return "jpg";
+    } else {
+      return "jpg";
+    }
   }
 
   private void validateAdmin(String username, Study study) {
