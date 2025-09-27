@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -50,6 +51,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StudyService {
@@ -184,8 +186,14 @@ public class StudyService {
       NoSuchAlgorithmException, ServerException, XmlParserException {
 
     String[] parts = base64Image.split(",");
+
+    log.info("base64Image : {}", base64Image);
+
     String imageString = parts[1];
+    log.info("imageString : {}", imageString);
+
     String mimeType = parts[0].split(":")[1].split(";")[0];
+    log.info("mimeType : {}", mimeType);
 
     byte[] decodedBytes = Base64.decodeBase64(imageString);
 

@@ -54,7 +54,8 @@ public class StudyController implements StudyControllerDocs {
 
   @PostMapping
   public ResponseEntity<ApiResponse<StudyCreateResponse>> createStudy(
-      @AuthenticationPrincipal Jwt token, @Valid @RequestBody StudyCreateRequest requestDTO) {
+      @AuthenticationPrincipal Jwt token, @Valid @RequestBody StudyCreateRequest requestDTO)
+      throws Exception {
 
     StudyCreateResponse responseDTO = studyService.createStudy(token.getClaim("username"),
         requestDTO);

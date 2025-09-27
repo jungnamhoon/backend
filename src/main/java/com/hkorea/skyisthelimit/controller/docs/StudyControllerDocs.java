@@ -55,7 +55,7 @@ public interface StudyControllerDocs {
   ResponseEntity<ApiResponse<StudyCreateResponse>> createStudy(
       @AuthenticationPrincipal Jwt token,
       @RequestBody StudyCreateRequest requestDTO
-  );
+  ) throws Exception;
 
 
   @Operation(
