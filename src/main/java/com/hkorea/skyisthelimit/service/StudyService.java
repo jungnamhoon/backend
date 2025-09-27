@@ -184,11 +184,25 @@ public class StudyService {
       InvalidKeyException, InvalidResponseException, IOException,
       NoSuchAlgorithmException, ServerException, XmlParserException {
 
-    String[] parts = base64Image.split(",");
+//    String[] parts = base64Image.split(",");
+//
+//    String imageString = parts[1];
+//
+//    String mimeType = parts[0].split(":")[1].split(";")[0];
 
-    String imageString = parts[1];
+    String imageString;
+    String mimeType;
 
-    String mimeType = parts[0].split(":")[1].split(";")[0];
+    if (base64Image.contains(",")) {
+      // data URI scheme 포함된 경우
+      String[] parts = base64Image.split(",");
+      imageString = parts[1];
+      mimeType = parts[0].split(":")[1].split(";")[0];
+    } else {
+      // 순수 base64 문자열만 온 경우 (mimeType을 기본값으로 설정)
+      imageString = base64Image;
+      mimeType = "image/png"; // 필요에 따라 변경 가능
+    }
 
     byte[] decodedBytes = Base64.decodeBase64(imageString);
 
