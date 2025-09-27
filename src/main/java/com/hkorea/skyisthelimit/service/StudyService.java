@@ -168,16 +168,17 @@ public class StudyService {
 
     Member host = memberService.getMember(username);
 
-    Study study = requestDTO.toEntity(host);
+    log.info("========== {}", host.getUsername());
 
-    System.out.println("helloworld " + study.getId());
+    Study study = requestDTO.toEntity(host);
+    studyRepository.save(study);
+
+    log.info("========== {}", study.getId());
 
     if (requestDTO.getThumbnailData() != null) {
       String thumbnailUrl = saveThumbnailToMinio(requestDTO.getThumbnailData(), study);
       study.setThumbnailUrl(thumbnailUrl);
     }
-
-    studyRepository.save(study);
 
     return StudyMapper.toStudyCreateResponse(study);
   }

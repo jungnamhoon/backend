@@ -20,6 +20,7 @@ import com.hkorea.skyisthelimit.service.StudyService;
 import jakarta.validation.Valid;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/studies")
 @RequiredArgsConstructor
@@ -57,6 +59,7 @@ public class StudyController implements StudyControllerDocs {
       @AuthenticationPrincipal Jwt token, @Valid @RequestBody StudyCreateRequest requestDTO)
       throws Exception {
 
+    log.info("========== {}", String.valueOf(token.getClaim("username")));
     StudyCreateResponse responseDTO = studyService.createStudy(token.getClaim("username"),
         requestDTO);
     return ApiResponse.of(SuccessCode.OK, responseDTO);
