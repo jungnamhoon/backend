@@ -2,12 +2,14 @@ package com.hkorea.skyisthelimit;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 
 @SpringBootApplication
+@ServletComponentScan
 public class SkyisthelimitApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SkyisthelimitApplication.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(SkyisthelimitApplication.class, args);
+  }
 
 }

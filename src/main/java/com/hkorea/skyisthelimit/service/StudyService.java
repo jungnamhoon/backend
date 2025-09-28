@@ -23,6 +23,7 @@ import com.hkorea.skyisthelimit.entity.QStudy;
 import com.hkorea.skyisthelimit.entity.Study;
 import com.hkorea.skyisthelimit.entity.StudyProblem;
 import com.hkorea.skyisthelimit.entity.embeddable.DailyProblem;
+import com.hkorea.skyisthelimit.entity.enums.MemberStudyStatus;
 import com.hkorea.skyisthelimit.repository.StudyRepository;
 import com.hkorea.skyisthelimit.service.enums.ImageType;
 import com.querydsl.core.types.OrderSpecifier;
@@ -41,6 +42,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -49,6 +52,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StudyService {
@@ -63,7 +67,8 @@ public class StudyService {
   private String minioEndpoint;
 
   @Transactional
-  public Page<StudySummaryResponse> getStudyPage(PageableCriteria<QStudy> criteria) {
+  public Page<StudySummaryResponse> getStudyPage(PageableCriteria<QStudy> criteria,
+      String username) {
 
     QStudy study = QStudy.study;
 
@@ -76,8 +81,12 @@ public class StudyService {
 
     long total = queryDSLService.fetchTotalCount(study, predicate);
 
-    List<StudySummaryResponse> studySummaryResponseList = StudyMapper.toStudySummaryResponseList(
-        studies);
+    List<StudySummaryResponse> studySummaryResponseList = studies.stream()
+        .map(s -> {
+          MemberStudyStatus memberStudyStatus = getMemberStudyStatus(s, username);
+          return StudyMapper.toStudySummaryResponse(s, memberStudyStatus);
+        })
+        .collect(Collectors.toList());
 
     return new PageImpl<>(studySummaryResponseList, pageable, total);
   }
@@ -158,16 +167,52 @@ public class StudyService {
   }
 
   @Transactional
-  public StudyCreateResponse createStudy(String username, StudyCreateRequest requestDTO) {
+  public StudyCreateResponse createStudy(String username, StudyCreateRequest requestDTO)
+      throws ErrorResponseException, InsufficientDataException, InternalException,
+      InvalidKeyException, InvalidResponseException, IOException,
+      NoSuchAlgorithmException, ServerException, XmlParserException {
 
     Member host = memberService.getMember(username);
 
     Study study = requestDTO.toEntity(host);
-    study.setThumbnailUrl(minioEndpoint + "/skyisthelimit/study/basic-thumbnail.png");
-
     studyRepository.save(study);
 
+    if (requestDTO.getThumbnailData() != null) {
+      String thumbnailUrl = saveThumbnailToMinio(requestDTO.getThumbnailData(), study);
+      study.setThumbnailUrl(thumbnailUrl);
+    }
+
     return StudyMapper.toStudyCreateResponse(study);
+  }
+
+  public MemberStudyStatus getMemberStudyStatus(Study study, String username) {
+    return study.getMemberStudies().stream()
+        .filter(ms -> ms.getMember().getUsername().equals(username))
+        .map(MemberStudy::getStatus)
+        .findFirst()
+        .orElse(MemberStudyStatus.NONE);
+  }
+
+  private String saveThumbnailToMinio(String base64Image, Study study)
+      throws ErrorResponseException, InsufficientDataException, InternalException,
+      InvalidKeyException, InvalidResponseException, IOException,
+      NoSuchAlgorithmException, ServerException, XmlParserException {
+
+    String[] parts = base64Image.split(",");
+
+    String imageString = parts[1];
+
+    String mimeType = parts[0].split(":")[1].split(";")[0];
+
+    byte[] decodedBytes = Base64.decodeBase64(imageString);
+
+    return minioService.uploadImage(
+        ImageType.STUDY,
+        Integer.toString(study.getId()),
+        decodedBytes,
+        "thumbnail." + getExtension(mimeType),
+        mimeType
+    );
   }
 
   @Transactional
@@ -208,6 +253,16 @@ public class StudyService {
           return StudyProblemMapper.toDailyProblemCreateResponse(dailyProblem);
         })
         .collect(Collectors.toSet());
+  }
+
+  private String getExtension(String mimeType) {
+    if (mimeType.equals("image/png")) {
+      return "png";
+    } else if (mimeType.equals("image/jpeg")) {
+      return "jpg";
+    } else {
+      return "jpg";
+    }
   }
 
   private void validateAdmin(String username, Study study) {

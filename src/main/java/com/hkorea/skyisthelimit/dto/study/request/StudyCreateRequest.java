@@ -47,6 +47,9 @@ public class StudyCreateRequest {
   @NotNull
   private Integer maxLevel;
 
+  @Schema(description = "썸네일 base64 데이터")
+  private String thumbnailData;
+
   public Study toEntity(Member host) {
     Study study = Study.builder()
         .name(this.name)

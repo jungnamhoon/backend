@@ -8,6 +8,7 @@ import com.hkorea.skyisthelimit.dto.study.response.StudyUpdateResponse;
 import com.hkorea.skyisthelimit.dto.study.response.ThumbnailUpdateResponse;
 import com.hkorea.skyisthelimit.entity.MemberStudy;
 import com.hkorea.skyisthelimit.entity.Study;
+import com.hkorea.skyisthelimit.entity.enums.MemberStudyStatus;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +33,8 @@ public class StudyMapper {
         .build();
   }
 
-  public static StudySummaryResponse toStudySummaryResponse(Study study) {
+  public static StudySummaryResponse toStudySummaryResponse(Study study,
+      MemberStudyStatus memberStudyStatus) {
     return StudySummaryResponse.builder()
         .studyId(study.getId())
         .thumbnailUrl(study.getThumbnailUrl())
@@ -46,6 +48,7 @@ public class StudyMapper {
         .dailyProblemCount(study.getDailyProblemCount())
         .description(study.getDescription())
         .status(study.getStatus())
+        .memberStudyStatus(memberStudyStatus)
         .build();
   }
 
@@ -103,11 +106,5 @@ public class StudyMapper {
     return ThumbnailUpdateResponse.builder()
         .imageUrl(study.getThumbnailUrl())
         .build();
-  }
-
-  public static List<StudySummaryResponse> toStudySummaryResponseList(List<Study> studyList) {
-    return studyList.stream()
-        .map(StudyMapper::toStudySummaryResponse)
-        .toList();
   }
 }

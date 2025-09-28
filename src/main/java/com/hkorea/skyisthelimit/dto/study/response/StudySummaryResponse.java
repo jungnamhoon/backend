@@ -1,5 +1,6 @@
 package com.hkorea.skyisthelimit.dto.study.response;
 
+import com.hkorea.skyisthelimit.entity.enums.MemberStudyStatus;
 import com.hkorea.skyisthelimit.entity.enums.ProblemRank;
 import com.hkorea.skyisthelimit.entity.enums.StudyStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -47,5 +48,8 @@ public class StudySummaryResponse {
 
   @Schema(description = "스터디 상태", example = "BEFORE_START")
   private StudyStatus status;
+
+  @Schema(description = "멤버의 스터디 요청 상태", example = "PENDING")
+  private MemberStudyStatus memberStudyStatus;
 
 }

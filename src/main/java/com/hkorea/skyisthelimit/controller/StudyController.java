@@ -20,6 +20,7 @@ import com.hkorea.skyisthelimit.service.StudyService;
 import jakarta.validation.Valid;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/studies")
 @RequiredArgsConstructor
@@ -46,15 +48,18 @@ public class StudyController implements StudyControllerDocs {
 
   @GetMapping
   public ResponseEntity<ApiResponse<Page<StudySummaryResponse>>> getStudyPage(
-      @ModelAttribute StudyCriteria criteria) {
+      @ModelAttribute StudyCriteria criteria, @AuthenticationPrincipal Jwt token) {
 
-    Page<StudySummaryResponse> responsePage = studyService.getStudyPage(criteria);
+    Page<StudySummaryResponse> responsePage = studyService.getStudyPage(
+        criteria,
+        token.getClaim("username"));
     return ApiResponse.of(SuccessCode.OK, responsePage);
   }
 
   @PostMapping
   public ResponseEntity<ApiResponse<StudyCreateResponse>> createStudy(
-      @AuthenticationPrincipal Jwt token, @Valid @RequestBody StudyCreateRequest requestDTO) {
+      @AuthenticationPrincipal Jwt token, @Valid @RequestBody StudyCreateRequest requestDTO)
+      throws Exception {
 
     StudyCreateResponse responseDTO = studyService.createStudy(token.getClaim("username"),
         requestDTO);

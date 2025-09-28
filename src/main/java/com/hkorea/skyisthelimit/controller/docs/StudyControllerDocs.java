@@ -40,7 +40,8 @@ public interface StudyControllerDocs {
       )
   })
   ResponseEntity<ApiResponse<Page<StudySummaryResponse>>> getStudyPage(
-      @ModelAttribute StudyCriteria criteria
+      @ModelAttribute StudyCriteria criteria,
+      @AuthenticationPrincipal Jwt token
   );
 
   @Operation(
@@ -55,7 +56,7 @@ public interface StudyControllerDocs {
   ResponseEntity<ApiResponse<StudyCreateResponse>> createStudy(
       @AuthenticationPrincipal Jwt token,
       @RequestBody StudyCreateRequest requestDTO
-  );
+  ) throws Exception;
 
 
   @Operation(
