@@ -48,9 +48,11 @@ public class StudyController implements StudyControllerDocs {
 
   @GetMapping
   public ResponseEntity<ApiResponse<Page<StudySummaryResponse>>> getStudyPage(
-      @ModelAttribute StudyCriteria criteria) {
+      @ModelAttribute StudyCriteria criteria, @AuthenticationPrincipal Jwt token) {
 
-    Page<StudySummaryResponse> responsePage = studyService.getStudyPage(criteria);
+    Page<StudySummaryResponse> responsePage = studyService.getStudyPage(
+        criteria,
+        token.getClaim("username"));
     return ApiResponse.of(SuccessCode.OK, responsePage);
   }
 

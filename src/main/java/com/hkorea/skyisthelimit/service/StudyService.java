@@ -23,6 +23,7 @@ import com.hkorea.skyisthelimit.entity.QStudy;
 import com.hkorea.skyisthelimit.entity.Study;
 import com.hkorea.skyisthelimit.entity.StudyProblem;
 import com.hkorea.skyisthelimit.entity.embeddable.DailyProblem;
+import com.hkorea.skyisthelimit.entity.enums.MemberStudyStatus;
 import com.hkorea.skyisthelimit.repository.StudyRepository;
 import com.hkorea.skyisthelimit.service.enums.ImageType;
 import com.querydsl.core.types.OrderSpecifier;
@@ -66,7 +67,8 @@ public class StudyService {
   private String minioEndpoint;
 
   @Transactional
-  public Page<StudySummaryResponse> getStudyPage(PageableCriteria<QStudy> criteria) {
+  public Page<StudySummaryResponse> getStudyPage(PageableCriteria<QStudy> criteria,
+      String username) {
 
     QStudy study = QStudy.study;
 
@@ -79,8 +81,12 @@ public class StudyService {
 
     long total = queryDSLService.fetchTotalCount(study, predicate);
 
-    List<StudySummaryResponse> studySummaryResponseList = StudyMapper.toStudySummaryResponseList(
-        studies);
+    List<StudySummaryResponse> studySummaryResponseList = studies.stream()
+        .map(s -> {
+          MemberStudyStatus memberStudyStatus = getMemberStudyStatus(s, username);
+          return StudyMapper.toStudySummaryResponse(s, memberStudyStatus);
+        })
+        .collect(Collectors.toList());
 
     return new PageImpl<>(studySummaryResponseList, pageable, total);
   }
@@ -177,6 +183,14 @@ public class StudyService {
     }
 
     return StudyMapper.toStudyCreateResponse(study);
+  }
+
+  public MemberStudyStatus getMemberStudyStatus(Study study, String username) {
+    return study.getMemberStudies().stream()
+        .filter(ms -> ms.getMember().getUsername().equals(username))
+        .map(MemberStudy::getStatus)
+        .findFirst()
+        .orElse(MemberStudyStatus.NONE);
   }
 
   private String saveThumbnailToMinio(String base64Image, Study study)
