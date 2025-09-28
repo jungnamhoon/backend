@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
 import com.hkorea.skyisthelimit.common.response.SuccessCode;
+import com.hkorea.skyisthelimit.service.MemberService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,13 +30,15 @@ public class JsonLoginFilter extends AbstractAuthenticationProcessingFilter {
           .matcher(HttpMethod.POST, "/auth/login");
 
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final MemberService memberService;
 
 //  public JsonLoginFilter() {
 //    super(DEFAULT_REQUEST_MATCHER);
 //  }
 
-  public JsonLoginFilter(AuthenticationManager authenticationManager) {
+  public JsonLoginFilter(AuthenticationManager authenticationManager, MemberService memberService) {
     super(DEFAULT_REQUEST_MATCHER, authenticationManager);
+    this.memberService = memberService;
   }
 
   @Override
@@ -67,11 +71,17 @@ public class JsonLoginFilter extends AbstractAuthenticationProcessingFilter {
         .setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
             SecurityContextHolder.getContext());
 
-    // JSON 응답 (공통 ApiResponse 사용)
+    String username = authResult.getName();
+    String profileImageUrl = memberService.getMember(username).getProfileImageUrl();
+
+    Map<String, Object> responseBody = new HashMap<>();
+    responseBody.put("username", username);
+    responseBody.put("profileImageUrl", profileImageUrl);
+
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
     objectMapper.writeValue(response.getWriter(),
-        ApiResponse.of(SuccessCode.OK, null).getBody());
+        ApiResponse.of(SuccessCode.OK, responseBody).getBody());
   }
 
   @Override

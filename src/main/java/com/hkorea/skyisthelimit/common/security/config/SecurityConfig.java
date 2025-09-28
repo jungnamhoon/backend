@@ -5,6 +5,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import com.hkorea.skyisthelimit.common.security.filter.JsonLoginFilter;
 import com.hkorea.skyisthelimit.common.security.handler.CustomAuthenticationEntryPoint;
 import com.hkorea.skyisthelimit.common.security.service.CustomUserDetailsService;
+import com.hkorea.skyisthelimit.service.MemberService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -60,10 +61,11 @@ public class SecurityConfig {
   @Order(2)
   public SecurityFilterChain jsonAuthFilterChain(HttpSecurity http,
       AuthenticationManager authenticationManager,
-      CustomAuthenticationEntryPoint customAuthenticationEntryPoint)
+      CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+      MemberService memberService)
       throws Exception {
 
-    JsonLoginFilter jsonLoginFilter = new JsonLoginFilter(authenticationManager);
+    JsonLoginFilter jsonLoginFilter = new JsonLoginFilter(authenticationManager, memberService);
 
     http
         .securityMatcher("auth/**")
