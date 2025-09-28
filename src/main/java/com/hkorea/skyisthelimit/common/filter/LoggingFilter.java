@@ -9,6 +9,9 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -19,15 +22,23 @@ public class LoggingFilter implements Filter {
       throws IOException, ServletException {
 
     HttpServletRequest httpRequest = (HttpServletRequest) request;
-    log.info("Incoming request: URI={} Method={} Remote IP={}",
-        httpRequest.getRequestURI(),
-        httpRequest.getMethod(),
-        httpRequest.getRemoteAddr());
+
+    // Request Param이 존재한다면
+    if (httpRequest.getParameterNames().hasMoreElements()) {
+      log.info("Request Method: [{}] URL: [{}] Params: [{}]",
+          httpRequest.getMethod(),
+          httpRequest.getRequestURI(),
+          getRequestParams(httpRequest));
+    } else {
+      log.info("Request Method: [{}] URL: [{}]",
+          httpRequest.getMethod(),
+          httpRequest.getRequestURI());
+    }
 
     chain.doFilter(request, response);
 
     HttpServletResponse httpResponse = (HttpServletResponse) response;
-    log.info("Outgoing response: Status={}", httpResponse.getStatus());
+    log.info("Response Status: [{}]", httpResponse.getStatus());
   }
 
   @Override
@@ -38,5 +49,18 @@ public class LoggingFilter implements Filter {
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
     Filter.super.init(filterConfig);
+  }
+
+  private Map<String, String> getRequestParams(HttpServletRequest request) {
+
+    Map<String, String> paramMap = new HashMap<>();
+    Enumeration<String> parameterNames = request.getParameterNames();
+
+    while (parameterNames.hasMoreElements()) {
+      String paramName = parameterNames.nextElement();
+      paramMap.put(paramName, request.getParameter(paramName));
+    }
+
+    return paramMap;
   }
 }
