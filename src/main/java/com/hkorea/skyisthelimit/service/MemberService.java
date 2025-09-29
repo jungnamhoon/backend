@@ -100,6 +100,11 @@ public class MemberService {
         .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
   }
 
+  public Member getMemberByOauth2Username(String oauth2Username) {
+    return memberRepository.findByOauth2Username(oauth2Username)
+        .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+  }
+
   private MemberStatsDTO buildMemberStatsDTO(Member member) {
     // 랭킹
     Integer ranking = calculateRanking(member);
@@ -108,12 +113,24 @@ public class MemberService {
     List<MemberProblemSolvedDTO> memberProblemSolvedDTOList = calculateSolvedProblemList(
         member.getMemberProblems());
 
+    Set<MemberProblem> memberProblems = member.getMemberProblems();
+
+    Map<LocalDate, Integer> dateToSolvedCountMap = memberProblems.stream()
+        .filter(mp -> mp.getSolvedDate() != null)
+        .collect(Collectors.groupingBy(
+            MemberProblem::getSolvedDate,
+            Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
+        ));
+
     // 날짜별 푼 문제 개수
     List<MemberProblemSolvedCountByDayDTO> memberProblemSolvedCountByDayDTOList = calculateSolvedCountList(
-        member.getMemberProblems());
+        dateToSolvedCountMap);
+
+    // 연속 학습
+    int streak = calculateStreak(dateToSolvedCountMap);
 
     return MemberMapper.toMemberStatsDTO(
-        ranking, memberProblemSolvedDTOList, memberProblemSolvedCountByDayDTOList);
+        ranking, streak, memberProblemSolvedDTOList, memberProblemSolvedCountByDayDTOList);
   }
 
 
@@ -138,17 +155,33 @@ public class MemberService {
   }
 
   private List<MemberProblemSolvedCountByDayDTO> calculateSolvedCountList(
-      Set<MemberProblem> memberProblems) {
-
-    // 메인 로직
-    Map<LocalDate, Integer> dateToSolvedCountMap = memberProblems.stream()
-        .filter(mp -> mp.getSolvedDate() != null)
-        .collect(Collectors.groupingBy(
-            MemberProblem::getSolvedDate,
-            Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
-        ));
-
+      Map<LocalDate, Integer> dateToSolvedCountMap) {
     return MemberProblemMapper.toMemberProblemSolvedCountByDayDTOList(dateToSolvedCountMap);
   }
+
+  private int calculateStreak(Map<LocalDate, Integer> dateToSolvedCountMap) {
+
+    LocalDate today = LocalDate.now();
+    LocalDate day = today.minusDays(1);
+    int streak = 0;
+
+    if (dateToSolvedCountMap.containsKey(today)) {
+      streak++;
+    }
+
+    while (true) {
+      int count = dateToSolvedCountMap.getOrDefault(day, 0);
+
+      if (count == 0) {
+        break;
+      }
+      streak++;
+      day = day.minusDays(1);
+    }
+
+    return streak;
+
+  }
+
 
 }

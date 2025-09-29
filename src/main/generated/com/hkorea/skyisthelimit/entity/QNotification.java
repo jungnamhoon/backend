@@ -30,7 +30,7 @@ public class QNotification extends EntityPathBase<Notification> {
 
     public final QMember member;
 
-    public final StringPath message = createString("message");
+    public final com.hkorea.skyisthelimit.dto.notification.internal.QMessageContent message;
 
     public QNotification(String variable) {
         this(Notification.class, forVariable(variable), INITS);
@@ -51,6 +51,7 @@ public class QNotification extends EntityPathBase<Notification> {
     public QNotification(Class<? extends Notification> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.member = inits.isInitialized("member") ? new QMember(forProperty("member")) : null;
+        this.message = inits.isInitialized("message") ? new com.hkorea.skyisthelimit.dto.notification.internal.QMessageContent(forProperty("message")) : null;
     }
 
 }

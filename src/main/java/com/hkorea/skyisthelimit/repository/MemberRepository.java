@@ -16,8 +16,13 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
   Optional<Member> findByUsername(String username);
 
+  Optional<Member> findByEmail(String email);
+
+  Optional<Member> findByOauth2Username(String oauth2Username);
+
   @Query("SELECT COUNT(m) + 1 " +
       "FROM Member m " +
       "WHERE m.score > :score")
   Integer findRanking(@Param("score") int score);
+
 }

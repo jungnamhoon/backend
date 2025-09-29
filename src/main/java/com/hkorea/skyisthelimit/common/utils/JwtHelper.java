@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtHelper {
 
+  private static final long ACCESS_TOKEN_EXPIRATION = 1000L * 60 * 60 * 24 * 14; // 10초
+  private static final long REFRESH_TOKEN_EXPIRATION = 1000L * 60 * 60 * 24 * 14; //14일
   private final SecretKey secretKey;
 
   public JwtHelper(@Value("${spring.jwt.secret}") String secret) {
@@ -23,9 +25,24 @@ public class JwtHelper {
         .get("username", String.class);
   }
 
+  public String getEmail(String token) {
+    return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
+        .get("email", String.class);
+  }
+
+  public String getName(String token) {
+    return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
+        .get("name", String.class);
+  }
+
   public String getRole(String token) {
     return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
         .get("role", String.class);
+  }
+
+  public String getCategory(String token) {
+    return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
+        .get("category", String.class);
   }
 
   public Boolean isExpired(String token) {
@@ -33,13 +50,34 @@ public class JwtHelper {
         .getExpiration().before(new Date());
   }
 
-  public String createJwt(String username, String role, Long expiredMs) {
+  public String createAccessToken(String username, String email, String profileImageUrl,
+      String role) {
 
     return Jwts.builder()
         .claim("username", username)
+        .claim("email", email)
+        .claim("name", profileImageUrl)
+
+        .claim("category", "access")
         .claim("role", role)
         .issuedAt(new Date(System.currentTimeMillis()))
-        .expiration(new Date(System.currentTimeMillis() + expiredMs))
+        .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
+        .signWith(secretKey)
+        .compact();
+  }
+
+  public String createRefreshToken(String username, String email, String profileImageUrl,
+      String role) {
+
+    return Jwts.builder()
+        .claim("username", username)
+        .claim("email", email)
+        .claim("profileImageUrl", profileImageUrl)
+
+        .claim("category", "refresh")
+        .claim("role", role)
+        .issuedAt(new Date(System.currentTimeMillis()))
+        .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
         .signWith(secretKey)
         .compact();
   }

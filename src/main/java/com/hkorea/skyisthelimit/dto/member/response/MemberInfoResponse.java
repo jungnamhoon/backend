@@ -11,8 +11,11 @@ import lombok.Data;
 @Builder
 public class MemberInfoResponse {
 
-  @Schema(title = "사용자 이름", description = "회원의 고유 username", example = "user1")
+  @Schema(title = "사용자 이름", description = "고유 아이디", example = "southernlight3816")
   private String username;
+
+  @Schema(title = "사용자 이메일", description = "회원의 이메일", example = "southernlight3816@gmail.com")
+  private String email;
 
   @Schema(title = "프로필 이미지 URL", description = "회원의 프로필 이미지 URL", example = "https://cdn.example.com/profiles/user1.png")
   private String profileImageUrl;

@@ -32,7 +32,11 @@ public class QStudy extends EntityPathBase<Study> {
 
     public final SetPath<com.hkorea.skyisthelimit.entity.embeddable.DailyProblem, com.hkorea.skyisthelimit.entity.embeddable.QDailyProblem> dailyProblems = this.<com.hkorea.skyisthelimit.entity.embeddable.DailyProblem, com.hkorea.skyisthelimit.entity.embeddable.QDailyProblem>createSet("dailyProblems", com.hkorea.skyisthelimit.entity.embeddable.DailyProblem.class, com.hkorea.skyisthelimit.entity.embeddable.QDailyProblem.class, PathInits.DIRECT2);
 
+    public final BooleanPath dailyProblemsNotUpToDate = createBoolean("dailyProblemsNotUpToDate");
+
     public final QMember dailyProblemsSetter;
+
+    public final BooleanPath dailyProblemsUpToDate = createBoolean("dailyProblemsUpToDate");
 
     public final StringPath description = createString("description");
 
@@ -55,6 +59,8 @@ public class QStudy extends EntityPathBase<Study> {
     public final EnumPath<com.hkorea.skyisthelimit.entity.enums.ProblemRank> minRank = createEnum("minRank", com.hkorea.skyisthelimit.entity.enums.ProblemRank.class);
 
     public final StringPath name = createString("name");
+
+    public final ListPath<StudyProblem, QStudyProblem> solvedStudyProblemList = this.<StudyProblem, QStudyProblem>createList("solvedStudyProblemList", StudyProblem.class, QStudyProblem.class, PathInits.DIRECT2);
 
     public final DatePath<java.time.LocalDate> startDate = createDate("startDate", java.time.LocalDate.class);
 

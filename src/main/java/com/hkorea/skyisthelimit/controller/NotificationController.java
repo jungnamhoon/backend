@@ -2,6 +2,7 @@ package com.hkorea.skyisthelimit.controller;
 
 import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.common.response.SuccessCode;
+import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.controller.docs.NotificationControllerDocs;
 import com.hkorea.skyisthelimit.dto.notification.response.NotificationResponse;
 import com.hkorea.skyisthelimit.service.NotificationService;
@@ -10,30 +11,29 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class NotificationController implements NotificationControllerDocs {
 
   private final NotificationService notificationService;
 
-  @GetMapping
+  @GetMapping("/notifications/me")
   public ResponseEntity<ApiResponse<List<NotificationResponse>>> getNotifications(
-      @AuthenticationPrincipal Jwt token) {
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
 
     List<NotificationResponse> responseDTOS = notificationService.getNotifications(
-        token.getClaim("username"));
+        customOAuth2User.getUsername());
     return ApiResponse.of(SuccessCode.OK, responseDTOS);
   }
 
-  @GetMapping(value = "me/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  public SseEmitter subscribe(@AuthenticationPrincipal Jwt token) {
-    return notificationService.subscribe(token.getClaim("username"));
+  @GetMapping(value = "/notifications/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+  public SseEmitter subscribe(@AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
+    return notificationService.subscribe(customOAuth2User.getUsername());
   }
 }
