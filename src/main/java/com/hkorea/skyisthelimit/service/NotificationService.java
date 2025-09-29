@@ -1,9 +1,11 @@
 package com.hkorea.skyisthelimit.service;
 
 import com.hkorea.skyisthelimit.common.utils.mapper.NotificationMapper;
+import com.hkorea.skyisthelimit.dto.notification.internal.MessageContent;
 import com.hkorea.skyisthelimit.dto.notification.response.NotificationResponse;
 import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.entity.Notification;
+import com.hkorea.skyisthelimit.entity.enums.MessageType;
 import com.hkorea.skyisthelimit.repository.EmitterRepository;
 import com.hkorea.skyisthelimit.repository.NotificationRepository;
 import jakarta.transaction.Transactional;
@@ -32,13 +34,15 @@ public class NotificationService {
     emitter.onTimeout(() -> emitterRepository.deleteByUsername(username));
     emitter.onError((ex) -> emitterRepository.deleteByUsername(username));
 
+    emitterRepository.logAllSubscribers();
+
     Member member = memberService.getMember(username);
     List<Notification> oldNotifications = fetchNotificationsForMember(
         member);
 
-    oldNotifications.forEach(notification -> {
-      sendToClient(username, notification);
-    });
+    oldNotifications.stream()
+        .map(NotificationMapper::toNotificationResponse)
+        .forEach(dto -> sendToClient(username, dto));
 
     sendToClient(username, "subscribe event, username : " + username);
 
@@ -52,16 +56,29 @@ public class NotificationService {
     List<Notification> oldNotifications = fetchNotificationsForMember(
         member);
 
-    return toResponseDTOS(oldNotifications);
+    return NotificationMapper.toNotificationResponseList(oldNotifications);
   }
 
   @Transactional
-  public void createNotification(String receiverUsername, String message) {
+  public void createNotification(String receiverUsername, MessageContent message) {
 
     Member receiver = memberService.getMember(receiverUsername);
     Notification notification = Notification.create(receiver, message);
     notificationRepository.save(notification);
     sendToClient(receiverUsername, NotificationMapper.toNotificationResponse(notification));
+  }
+
+  public MessageContent createMessage(Member fromMember, Integer studyId, MessageType messageType) {
+
+    return new MessageContent(
+        fromMember.getId(),
+        fromMember.getUsername(),
+        fromMember.getRealName(),
+        fromMember.getNickname(),
+        fromMember.getEmail(),
+        studyId,
+        messageType
+    );
   }
 
   private void sendToClient(String username, Object data) {
@@ -79,12 +96,5 @@ public class NotificationService {
   private List<Notification> fetchNotificationsForMember(Member member) {
     return notificationRepository.findByMemberOrderByCreatedAtDesc(
         member);
-  }
-
-
-  private List<NotificationResponse> toResponseDTOS(List<Notification> notifications) {
-    return notifications.stream()
-        .map(NotificationMapper::toNotificationResponse)
-        .toList();
   }
 }

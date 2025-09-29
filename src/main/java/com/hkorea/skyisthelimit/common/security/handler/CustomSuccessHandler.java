@@ -2,13 +2,18 @@ package com.hkorea.skyisthelimit.common.security.handler;
 
 import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.common.utils.JwtHelper;
+import com.hkorea.skyisthelimit.entity.Member;
+import com.hkorea.skyisthelimit.service.MemberService;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -16,9 +21,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
   private final JwtHelper jwtHelper;
+  private final MemberService memberService;
+
+  @Value("${frontend.url}")
+  private String frontendUrl;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -26,23 +36,38 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
-    String username = customUserDetails.getUsername();
+    String oauth2Username = customUserDetails.getOauth2Username();
+    String role = extractOAuthRole(authentication);
 
+    Member member = memberService.getMemberByOauth2Username(oauth2Username);
+
+    String username = member.getUsername();
+    String email = member.getEmail();
+    String profileImageUrl = member.getProfileImageUrl();
+
+    String refreshToken = jwtHelper.createRefreshToken(username, email, profileImageUrl, role);
+    
+    response.addCookie(createCookie("refreshAuthorization", refreshToken));
+    response.sendRedirect(frontendUrl + "?redirectedFromSocialLogin=true");
+  }
+
+  private String extractOAuthRole(Authentication authentication) {
     Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
     Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
     GrantedAuthority auth = iterator.next();
-    String role = auth.getAuthority();
 
-    String accessToken = jwtHelper.createJwt(username, role, 60 * 60 * 25 * 14L);
-    String refreshToken = jwtHelper.createJwt(username, role, 60 * 60 * 24 * 14L);
+    return auth.getAuthority();
+  }
 
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
+  private Cookie createCookie(String key, String value) {
 
-    String jsonResponse =
-        "{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}";
+    Cookie cookie = new Cookie(key, value);
+    cookie.setMaxAge(60 * 60 * 60);
+    cookie.setSecure(true);
+    cookie.setPath("/");
+    cookie.setHttpOnly(true);
 
-    response.getWriter().write(jsonResponse);
+    return cookie;
   }
 }
 

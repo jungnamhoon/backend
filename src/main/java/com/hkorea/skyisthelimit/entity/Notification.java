@@ -1,5 +1,7 @@
 package com.hkorea.skyisthelimit.entity;
 
+import com.hkorea.skyisthelimit.dto.notification.internal.MessageContent;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -18,7 +20,8 @@ public class Notification {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private String message;
+  @Embedded
+  private MessageContent message;
 
   private boolean isRead = false;
 
@@ -28,7 +31,7 @@ public class Notification {
   @JoinColumn(name = "member_id")
   private Member member;
 
-  public static Notification create(Member member, String message) {
+  public static Notification create(Member member, MessageContent message) {
     Notification notification = new Notification();
     notification.member = member;
     notification.message = message;

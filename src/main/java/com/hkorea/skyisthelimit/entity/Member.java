@@ -34,13 +34,14 @@ public class Member {
   private Integer id;
 
   @Column(unique = true, nullable = false)
-  private String username;
-  private String name;
-  private String email;
-  private String role;
+  private String oauth2Username;
 
-
-  private String password;
+  @Column(unique = true, nullable = false)
+  private String username; // southernlight3816
+  private String realName; // 김남훈
+  private String email; // southernlight3816@gmail.com
+  private String role; // ROLE_USER
+  
   private String profileImageUrl;
   private String nickname;
   private int score;

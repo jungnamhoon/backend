@@ -18,13 +18,14 @@ public class MemberMapper {
       Member member, MemberStatsDTO memberStatsDTO) {
     return MemberInfoResponse.builder()
         .username(member.getUsername())
+        .email(member.getEmail())
         .profileImageUrl(member.getProfileImageUrl())
         .nickname(member.getNickname())
         .score(member.getScore())
         .ranking(memberStatsDTO.getRanking())
         .totalSolvedProblems(member.getTotalSolvedProblems())
         .totalReviewNotes(member.getTotalReviewNotes())
-        .streak(member.getStreak())
+        .streak(memberStatsDTO.getStreak())
         .solvedProblemList(memberStatsDTO.getMemberProblemSolvedDTOList())
         .solvedCountList(memberStatsDTO.getMemberProblemSolvedCountByDayDTOList())
         .build();
@@ -36,12 +37,14 @@ public class MemberMapper {
         .build();
   }
 
-  public static MemberStatsDTO toMemberStatsDTO(Integer ranking,
+  public static MemberStatsDTO toMemberStatsDTO(
+      Integer ranking, int streak,
       List<MemberProblemSolvedDTO> memberProblemSolvedDTOList,
       List<MemberProblemSolvedCountByDayDTO> memberProblemSolvedCountByDayDTOList) {
 
     return MemberStatsDTO.builder()
         .ranking(ranking)
+        .streak(streak)
         .memberProblemSolvedDTOList(memberProblemSolvedDTOList)
         .memberProblemSolvedCountByDayDTOList(memberProblemSolvedCountByDayDTOList)
         .build();

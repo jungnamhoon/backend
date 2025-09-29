@@ -7,6 +7,7 @@ import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.repository.MemberRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -19,6 +20,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
   private final MemberRepository memberRepository;
 
+  @Value("${minio.endpoint}")
+  private String minioEndpoint;
+
+
   @Override
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
@@ -26,35 +31,42 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     GoogleResponse oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
 
-    String username = oAuth2Response.getProvider() + " " + oAuth2Response.getProviderId();
-    Optional<Member> existMemberOpt = memberRepository.findByUsername(username);
+    String oauth2Username = oAuth2Response.getProvider() + " " + oAuth2Response.getProviderId();
+    Optional<Member> existMemberOpt = memberRepository.findByOauth2Username(oauth2Username);
 
     if (existMemberOpt.isEmpty()) {
       Member member = new Member();
-      member.setUsername(username);
+
+      member.setOauth2Username(oauth2Username);
+      member.setUsername(oAuth2Response.getEmail().split("@")[0]);
+      member.setRealName(oAuth2Response.getName());
       member.setEmail(oAuth2Response.getEmail());
-      member.setName(oAuth2Response.getName());
       member.setRole("ROLE_USER");
+      member.setProfileImageUrl(minioEndpoint + "/" + "profile" + "/" + "basic-profile.png");
+      member.setNickname("닉네임");
 
       memberRepository.save(member);
 
       UserDTO userDTO = new UserDTO();
-      userDTO.setUsername(username);
-      userDTO.setName(oAuth2Response.getName());
+      userDTO.setOauth2Username(oauth2Username);
+      userDTO.setUsername(oAuth2Response.getEmail().split("@")[0]);
+      userDTO.setRealName(oAuth2Response.getName());
+      userDTO.setEmail(oAuth2Response.getEmail());
       userDTO.setRole("ROLE_USER");
 
       return new CustomOAuth2User(userDTO);
     } else {
 
       Member existMember = existMemberOpt.get();
-      existMember.setEmail(oAuth2Response.getEmail());
-      existMember.setName(oAuth2Response.getName());
 
       memberRepository.save(existMember);
 
       UserDTO userDTO = new UserDTO();
+
+      userDTO.setOauth2Username(existMember.getOauth2Username());
       userDTO.setUsername(existMember.getUsername());
-      userDTO.setName(oAuth2Response.getName());
+      userDTO.setRealName(existMember.getRealName());
+      userDTO.setEmail(existMember.getEmail());
       userDTO.setRole(existMember.getRole());
 
       return new CustomOAuth2User(userDTO);

@@ -2,6 +2,7 @@ package com.hkorea.skyisthelimit.controller;
 
 import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.common.response.SuccessCode;
+import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.controller.docs.StudyControllerDocs;
 import com.hkorea.skyisthelimit.dto.criteria.StudyCriteria;
 import com.hkorea.skyisthelimit.dto.memberstudy.request.MemberStudyParticipationRequest;
@@ -24,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -48,20 +48,22 @@ public class StudyController implements StudyControllerDocs {
 
   @GetMapping
   public ResponseEntity<ApiResponse<Page<StudySummaryResponse>>> getStudyPage(
-      @ModelAttribute StudyCriteria criteria, @AuthenticationPrincipal Jwt token) {
+      @ModelAttribute StudyCriteria criteria,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
 
     Page<StudySummaryResponse> responsePage = studyService.getStudyPage(
         criteria,
-        token.getClaim("username"));
+        customOAuth2User.getUsername());
     return ApiResponse.of(SuccessCode.OK, responsePage);
   }
 
   @PostMapping
   public ResponseEntity<ApiResponse<StudyCreateResponse>> createStudy(
-      @AuthenticationPrincipal Jwt token, @Valid @RequestBody StudyCreateRequest requestDTO)
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
+      @Valid @RequestBody StudyCreateRequest requestDTO)
       throws Exception {
 
-    StudyCreateResponse responseDTO = studyService.createStudy(token.getClaim("username"),
+    StudyCreateResponse responseDTO = studyService.createStudy(customOAuth2User.getUsername(),
         requestDTO);
     return ApiResponse.of(SuccessCode.OK, responseDTO);
   }
@@ -75,11 +77,12 @@ public class StudyController implements StudyControllerDocs {
 
   @PatchMapping("/{studyId}")
   public ResponseEntity<ApiResponse<StudyUpdateResponse>> updateStudy(
-      @PathVariable Integer studyId, @AuthenticationPrincipal Jwt token,
+      @PathVariable Integer studyId, @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @RequestBody StudyUpdateRequest requestDTO
   ) {
 
-    StudyUpdateResponse responseDTO = studyService.updateStudy(studyId, token.getClaim("username"),
+    StudyUpdateResponse responseDTO = studyService.updateStudy(studyId,
+        customOAuth2User.getUsername(),
         requestDTO);
 
     return ApiResponse.of(SuccessCode.OK, responseDTO);
@@ -88,12 +91,12 @@ public class StudyController implements StudyControllerDocs {
   @PutMapping(value = "/{studyId}/thumbnail-image", consumes = {"multipart/form-data"})
   public ResponseEntity<ApiResponse<ThumbnailUpdateResponse>> updateThumbnail(
       @PathVariable Integer studyId,
-      @AuthenticationPrincipal Jwt token,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @RequestPart("file") MultipartFile thumbnailImage) throws Exception {
 
     ThumbnailUpdateResponse responseDTO = studyService.updateThumbnail(
         studyId,
-        token.getClaim("username"),
+        customOAuth2User.getUsername(),
         thumbnailImage
     );
 
@@ -104,10 +107,10 @@ public class StudyController implements StudyControllerDocs {
   @PostMapping("/{studyId}/requests")
   public ResponseEntity<ApiResponse<MemberStudyParticipationResponse>> requestJoinStudy(
       @PathVariable Integer studyId,
-      @AuthenticationPrincipal Jwt token) {
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
 
     MemberStudyParticipationResponse responseDTO = memberStudyService.requestJoinStudy(
-        token.getClaim("username"), studyId);
+        customOAuth2User.getUsername(), studyId);
     return ApiResponse.of(SuccessCode.OK, responseDTO);
   }
 
@@ -115,14 +118,14 @@ public class StudyController implements StudyControllerDocs {
   @PatchMapping("/{studyId}/requests/{requester-username}")
   public ResponseEntity<ApiResponse<MemberStudyParticipationResponse>> handleRequest(
       @PathVariable Integer studyId,
-      @AuthenticationPrincipal Jwt token,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @PathVariable("requester-username") String requesterUsername,
       @RequestBody MemberStudyParticipationRequest requestDTO
   ) {
 
     MemberStudyParticipationResponse responseDTO = memberStudyService.handleRequest(
         studyId,
-        token.getClaim("username"),
+        customOAuth2User.getUsername(),
         requesterUsername,
         requestDTO.getRequestStatus());
     return ApiResponse.of(SuccessCode.OK, responseDTO);
@@ -133,11 +136,11 @@ public class StudyController implements StudyControllerDocs {
   public ResponseEntity<ApiResponse<MemberStudyParticipationResponse>> inviteToStudy(
       @PathVariable Integer studyId,
       @PathVariable("invitee-username") String inviteeUsername,
-      @AuthenticationPrincipal Jwt token) {
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
 
     MemberStudyParticipationResponse responseDTO = memberStudyService.inviteToStudy(
         studyId,
-        token.getClaim("username"),
+        customOAuth2User.getUsername(),
         inviteeUsername
     );
 
@@ -149,11 +152,11 @@ public class StudyController implements StudyControllerDocs {
   public ResponseEntity<ApiResponse<MemberStudyParticipationResponse>> handleInvitation(
       @PathVariable Integer studyId,
       @RequestBody MemberStudyParticipationRequest requestDTO,
-      @AuthenticationPrincipal Jwt token) {
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
 
     MemberStudyParticipationResponse responseDTO = memberStudyService.handleInvitation(
         studyId,
-        token.getClaim("username"),
+        customOAuth2User.getUsername(),
         requestDTO.getRequestStatus()
     );
 
@@ -163,11 +166,11 @@ public class StudyController implements StudyControllerDocs {
   @PostMapping("/{studyId}/daily-problems")
   public ResponseEntity<ApiResponse<Set<DailyProblemCreateResponse>>> createDailyProblems(
       @PathVariable Integer studyId,
-      @AuthenticationPrincipal Jwt token,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @Valid @RequestBody DailyProblemsCreateRequest requestDTO) {
 
     Set<DailyProblemCreateResponse> responseDTOS = studyService.createDailyProblems(studyId,
-        token.getClaim("username"), requestDTO);
+        customOAuth2User.getUsername(), requestDTO);
     return ApiResponse.of(SuccessCode.OK, responseDTOS);
   }
 

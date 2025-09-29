@@ -17,4 +17,5 @@ public class MemberStatsDTO {
   private Integer ranking;
   private List<MemberProblemSolvedDTO> memberProblemSolvedDTOList;
   private List<MemberProblemSolvedCountByDayDTO> memberProblemSolvedCountByDayDTOList;
+  private int streak;
 }

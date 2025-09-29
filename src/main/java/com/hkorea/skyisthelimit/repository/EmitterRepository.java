@@ -2,10 +2,12 @@ package com.hkorea.skyisthelimit.repository;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Repository
+@Slf4j
 public class EmitterRepository {
 
   private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
@@ -21,5 +23,12 @@ public class EmitterRepository {
 
   public void deleteByUsername(String username) {
     emitters.remove(username);
+  }
+
+  public void logAllSubscribers() {
+
+    System.out.println("===== 현재 구독자 목록 =====");
+    emitters.keySet().forEach(username -> log.info("username: {}", username));
+    System.out.println("==========================");
   }
 }

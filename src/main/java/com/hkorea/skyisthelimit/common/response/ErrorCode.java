@@ -15,6 +15,10 @@ public enum ErrorCode {
   MALFORMED_JSON(HttpStatus.BAD_REQUEST, "C004", "JSON 형식이 올바르지 않습니다"),
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "서버 내부 오류가 발생했습니다"),
 
+  REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "A001", "리프레시 토큰이 유효하지 않습니다"),
+  REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "A002", "리프레시 토큰이 만료되었습니다"),
+  REFRESH_TOKEN_CATEGORY_INVALID(HttpStatus.UNAUTHORIZED, "A003", "리프레시 토큰이 아닙니다"),
+
   DUPLICATE_MEMBER(HttpStatus.BAD_REQUEST, "M001", "이미 존재하는 회원입니다"),
   DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "M002", "이미 존재하는 닉네임입니다"),
   MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "M003", "멤버를 찾을 수 없습니다"),

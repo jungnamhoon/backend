@@ -118,7 +118,7 @@ public class MemberProblemService {
     List<MemberProblem> memberProblems = memberProblemRepository.findByMemberUsername(username);
 
     return MemberProblemMapper.toMemberProblemTagCountResponseList(memberProblems);
-    
+
   }
 
   private MemberProblem findMemberProblem(String username, Integer baekjoonId) {

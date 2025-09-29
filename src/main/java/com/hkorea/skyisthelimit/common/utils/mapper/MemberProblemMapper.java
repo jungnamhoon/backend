@@ -52,6 +52,7 @@ public class MemberProblemMapper {
     return RandomProblemResponse.builder()
         .baekjoonId(memberProblem.getProblem().getBaekjoonId())
         .title(memberProblem.getProblem().getTitle())
+        .rank(memberProblem.getProblem().getRank())
         .status(memberProblem.getStatus())
         .url(memberProblem.getProblem().getUrl())
         .build();

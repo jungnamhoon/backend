@@ -1,23 +1,29 @@
 package com.hkorea.skyisthelimit.controller.docs;
 
+import com.hkorea.skyisthelimit.common.response.ApiResponse;
+import com.hkorea.skyisthelimit.dto.auth.response.JwtResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Tag(name = "Auth")
 public interface AuthControllerDocs {
 
   @Operation(
-      summary = "Google OAuth2 로그인",
-      description = "구글 OAuth2 로그인 프로세스를 시작합니다. 구글 로그인 페이지로 리다이렉트됩니다."
+      summary = "Access Token 재발급",
+      description = "Refresh Token 쿠키를 이용하여 새로운 Access Token을 발급합니다."
   )
   @ApiResponses({
       @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "302",
-          description = "구글 로그인 페이지로 리다이렉트 성공"
+          responseCode = "200",
+          description = "Access Token 재발급 성공"
       )
   })
-  @GetMapping("/oauth2/authorization/google")
-  String loginWithGoogle();
+  @GetMapping("/auth/reissue/access")
+  ResponseEntity<ApiResponse<JwtResponse>> reissueAccessToken(
+      @CookieValue(value = "refreshAuthorization") String refreshToken
+  );
 }

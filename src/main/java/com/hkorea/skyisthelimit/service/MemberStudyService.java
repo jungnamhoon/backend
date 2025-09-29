@@ -5,10 +5,12 @@ import com.hkorea.skyisthelimit.common.response.ErrorCode;
 import com.hkorea.skyisthelimit.common.utils.mapper.MemberStudyMapper;
 import com.hkorea.skyisthelimit.dto.memberstudy.response.MemberStudyParticipationResponse;
 import com.hkorea.skyisthelimit.dto.memberstudy.response.MemberStudyResponse;
+import com.hkorea.skyisthelimit.dto.notification.internal.MessageContent;
 import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.entity.MemberStudy;
 import com.hkorea.skyisthelimit.entity.Study;
 import com.hkorea.skyisthelimit.entity.enums.MemberStudyStatus;
+import com.hkorea.skyisthelimit.entity.enums.MessageType;
 import com.hkorea.skyisthelimit.repository.MemberStudyRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -46,9 +48,10 @@ public class MemberStudyService {
     MemberStudy memberStudy = MemberStudy.create(member, study, MemberStudyStatus.PENDING);
     memberStudyRepository.save(memberStudy);
 
-    // user -> admin
-    String message = member.getUsername() + " 이 스터디 참가 요청을 보냈습니다.";
-    sendNotification(study.getCreator().getUsername(), message);
+    MessageContent message = notificationService.createMessage(member, studyId,
+        MessageType.REQUEST);
+    String creatorUsername = study.getCreator().getUsername();
+    sendNotification(creatorUsername, message);
 
     return MemberStudyMapper.toMemberStudyParticipationResponse(memberStudy);
   }
@@ -58,6 +61,7 @@ public class MemberStudyService {
       String requestUsername, MemberStudyStatus newStatus) {
 
     Study study = studyService.getStudy(studyId);
+    Member adminMember = memberService.getMember(username);
     Member requestMember = memberService.getMember(requestUsername);
 
     MemberStudy memberStudy = getMemberStudy(
@@ -66,11 +70,15 @@ public class MemberStudyService {
     validateAdminRequest(memberStudy.getStudy(), username);
     validatePending(memberStudy);
 
+    MessageContent message;
     if (newStatus.equals(MemberStudyStatus.APPROVED)) {
       study.incrementCurrentMembers();
+      message = notificationService.createMessage(adminMember, studyId, MessageType.ACCEPT_REQUEST);
+    } else {
+      message = notificationService.createMessage(adminMember, studyId, MessageType.REJECT_REQUEST);
     }
-
     memberStudy.setStatus(newStatus);
+    sendNotification(requestUsername, message);
 
     return MemberStudyMapper.toMemberStudyParticipationResponse(memberStudy);
   }
@@ -79,6 +87,7 @@ public class MemberStudyService {
   public MemberStudyParticipationResponse inviteToStudy(Integer studyId, String username,
       String inviteeUsername) {
 
+    Member adminMember = memberService.getMember(username);
     Member inviteeMember = memberService.getMember(inviteeUsername);
     Study study = studyService.getStudy(studyId);
 
@@ -88,7 +97,9 @@ public class MemberStudyService {
     MemberStudy memberStudy = MemberStudy.create(inviteeMember, study, MemberStudyStatus.PENDING);
     memberStudyRepository.save(memberStudy);
 
-    String message = study.getName() + "(id=" + study.getId() + ") 의 초대 요청을 받았습니다.";
+    MessageContent message = notificationService.createMessage(adminMember, studyId,
+        MessageType.INVITATION);
+
     sendNotification(inviteeUsername, message);
 
     return MemberStudyMapper.toMemberStudyParticipationResponse(memberStudy);
@@ -105,11 +116,16 @@ public class MemberStudyService {
 
     validatePending(memberStudy);
 
+    MessageContent message;
     if (newStatus.equals(MemberStudyStatus.APPROVED)) {
       study.incrementCurrentMembers();
+      message = notificationService.createMessage(member, studyId, MessageType.ACCEPT_INVITATION);
+    } else {
+      message = notificationService.createMessage(member, studyId, MessageType.REJECT_INVITATION);
     }
 
     memberStudy.setStatus(newStatus);
+    sendNotification(study.getCreator().getUsername(), message);
 
     return MemberStudyMapper.toMemberStudyParticipationResponse(memberStudy);
   }
@@ -125,7 +141,7 @@ public class MemberStudyService {
     });
   }
 
-  private void sendNotification(String receiverUsername, String message) {
+  private void sendNotification(String receiverUsername, MessageContent message) {
 
     notificationService.createNotification(receiverUsername, message);
   }

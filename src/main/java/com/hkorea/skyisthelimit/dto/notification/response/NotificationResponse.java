@@ -1,5 +1,6 @@
 package com.hkorea.skyisthelimit.dto.notification.response;
 
+import com.hkorea.skyisthelimit.dto.notification.internal.MessageContent;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -14,7 +15,7 @@ public class NotificationResponse {
   private Long id;
 
   @Schema(description = "알림 메시지 내용", example = "user2 이 스터디 참가 요청을 보냈습니다.;")
-  private String message;
+  private MessageContent messageContent;
 
   @Schema(description = "읽음 여부", example = "false")
   private boolean isRead;

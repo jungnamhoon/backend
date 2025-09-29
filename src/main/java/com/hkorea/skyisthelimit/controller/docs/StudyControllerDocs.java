@@ -1,6 +1,7 @@
 package com.hkorea.skyisthelimit.controller.docs;
 
 import com.hkorea.skyisthelimit.common.response.ApiResponse;
+import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.dto.criteria.StudyCriteria;
 import com.hkorea.skyisthelimit.dto.memberstudy.request.MemberStudyParticipationRequest;
 import com.hkorea.skyisthelimit.dto.memberstudy.response.MemberStudyParticipationResponse;
@@ -20,7 +21,6 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,7 +41,7 @@ public interface StudyControllerDocs {
   })
   ResponseEntity<ApiResponse<Page<StudySummaryResponse>>> getStudyPage(
       @ModelAttribute StudyCriteria criteria,
-      @AuthenticationPrincipal Jwt token
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User
   );
 
   @Operation(
@@ -54,7 +54,7 @@ public interface StudyControllerDocs {
       )
   })
   ResponseEntity<ApiResponse<StudyCreateResponse>> createStudy(
-      @AuthenticationPrincipal Jwt token,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @RequestBody StudyCreateRequest requestDTO
   ) throws Exception;
 
@@ -83,7 +83,7 @@ public interface StudyControllerDocs {
   })
   ResponseEntity<ApiResponse<StudyUpdateResponse>> updateStudy(
       @PathVariable Integer studyId,
-      @AuthenticationPrincipal Jwt token,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @RequestBody StudyUpdateRequest requestDTO
   );
 
@@ -100,7 +100,7 @@ public interface StudyControllerDocs {
   })
   ResponseEntity<ApiResponse<ThumbnailUpdateResponse>> updateThumbnail(
       @PathVariable Integer studyId,
-      @AuthenticationPrincipal Jwt token,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @io.swagger.v3.oas.annotations.parameters.RequestBody(
           description = "업로드할 썸네일 이미지 (jpg, png 등)",
           required = true
@@ -119,7 +119,7 @@ public interface StudyControllerDocs {
   })
   ResponseEntity<ApiResponse<MemberStudyParticipationResponse>> requestJoinStudy(
       @PathVariable Integer studyId,
-      @AuthenticationPrincipal Jwt token
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User
 
   );
 
@@ -134,7 +134,7 @@ public interface StudyControllerDocs {
   })
   ResponseEntity<ApiResponse<MemberStudyParticipationResponse>> handleRequest(
       @PathVariable Integer studyId,
-      @AuthenticationPrincipal Jwt token,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @PathVariable String username,
       @RequestBody MemberStudyParticipationRequest requestDTO
   );
@@ -151,7 +151,7 @@ public interface StudyControllerDocs {
   ResponseEntity<ApiResponse<MemberStudyParticipationResponse>> inviteToStudy(
       @PathVariable Integer studyId,
       @PathVariable String inviteeUsername,
-      @AuthenticationPrincipal Jwt token
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User
   );
 
   @Operation(
@@ -166,7 +166,7 @@ public interface StudyControllerDocs {
   ResponseEntity<ApiResponse<MemberStudyParticipationResponse>> handleInvitation(
       @PathVariable Integer studyId,
       @RequestBody MemberStudyParticipationRequest requestDTO,
-      @AuthenticationPrincipal Jwt token
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User
   );
 
   @Operation(
@@ -180,7 +180,7 @@ public interface StudyControllerDocs {
   })
   ResponseEntity<ApiResponse<Set<DailyProblemCreateResponse>>> createDailyProblems(
       @PathVariable Integer studyId,
-      @AuthenticationPrincipal Jwt token,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @RequestBody DailyProblemsCreateRequest requestDTO
   );
 }

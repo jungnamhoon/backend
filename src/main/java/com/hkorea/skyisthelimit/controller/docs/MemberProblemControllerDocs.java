@@ -1,6 +1,7 @@
 package com.hkorea.skyisthelimit.controller.docs;
 
 import com.hkorea.skyisthelimit.common.response.ApiResponse;
+import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.dto.criteria.MemberProblemCriteria;
 import com.hkorea.skyisthelimit.dto.criteria.RandomProblemCriteria;
 import com.hkorea.skyisthelimit.dto.memberproblem.request.MemberProblemTagCountResponse;
@@ -17,7 +18,6 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,32 +38,8 @@ public interface MemberProblemControllerDocs {
       )
   })
   ResponseEntity<ApiResponse<Page<MemberProblemResponse>>> getMemberProblemPage(
-      @PathVariable String username,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @ModelAttribute MemberProblemCriteria criteria
-  );
-
-
-  @Operation(
-      summary = "문제 시도",
-      description = """
-          특정 사용자가 문제를 시도했을 때 호출되는 API입니다.
-          
-          ✅ 사용 예시
-          - 사용자가 문제를 성공적으로 풀었을 때: isSolved = true
-          - 사용자가 문제를 풀지 못했을 때: isSolved = false
-          
-          Extension 에서 문제 시도 시 호출합니다.
-          """
-  )
-  @ApiResponses({
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "200",
-          description = "문제 풀이 기록 등록/수정"
-      )
-  })
-  ResponseEntity<ApiResponse<SolveResponse>> solveProblem(
-      @PathVariable String username,
-      @RequestBody SolveRequest requestDTO
   );
 
   @Operation(
@@ -85,7 +61,7 @@ public interface MemberProblemControllerDocs {
       )
   })
   public ResponseEntity<ApiResponse<SolveResponse>> solveProblem(
-      @AuthenticationPrincipal Jwt token,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @RequestBody SolveRequest requestDTO);
 
   @Operation(
@@ -99,7 +75,7 @@ public interface MemberProblemControllerDocs {
       )
   })
   ResponseEntity<ApiResponse<NoteResponse>> getNote(
-      @PathVariable String username,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @PathVariable Integer baekjoonId
   );
 
@@ -114,7 +90,7 @@ public interface MemberProblemControllerDocs {
       )
   })
   ResponseEntity<ApiResponse<NoteResponse>> writeNote(
-      @PathVariable String username,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @PathVariable Integer baekjoonId,
       @RequestBody NoteRequestDTO requestDTO
   );
@@ -130,7 +106,7 @@ public interface MemberProblemControllerDocs {
       )
   })
   ResponseEntity<ApiResponse<RandomProblemResponse>> getRandomProblem(
-      @PathVariable String username,
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @ModelAttribute RandomProblemCriteria criteria
   );
 
@@ -145,6 +121,6 @@ public interface MemberProblemControllerDocs {
       )
   })
   ResponseEntity<ApiResponse<List<MemberProblemTagCountResponse>>> getMemberStatistics(
-      @PathVariable String username);
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User);
 
 }
