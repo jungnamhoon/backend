@@ -46,8 +46,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     String profileImageUrl = member.getProfileImageUrl();
 
     String refreshToken = jwtHelper.createRefreshToken(username, email, profileImageUrl, role);
-    
-    response.addCookie(createCookie("refreshAuthorization", refreshToken));
+
+//    response.addCookie(createCookie("refreshAuthorization", refreshToken));
+    addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
     response.sendRedirect(frontendUrl + "?redirectedFromSocialLogin=true");
   }
 
@@ -68,6 +69,21 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     cookie.setHttpOnly(true);
 
     return cookie;
+  }
+
+  private void addCookieWithSameSite(HttpServletResponse response, String key, String value) {
+    // 쿠키 객체를 생성
+    Cookie cookie = new Cookie(key, value);
+    cookie.setMaxAge(60 * 60 * 60); // 쿠키의 유효 기간을 설정
+    cookie.setSecure(true); // HTTPS에서만 전송되도록 설정
+    cookie.setPath("/"); // 쿠키의 유효 범위를 루트 경로로 설정
+    cookie.setHttpOnly(true); // 클라이언트에서 접근 불가능하도록 설정
+
+    // Set-Cookie 헤더에 SameSite=None 추가
+    String cookieHeader = key + "=" + value + "; Max-Age=" + (60 * 60 * 60)
+        + "; Path=/; HttpOnly; Secure; SameSite=None";
+
+    response.addHeader("Set-Cookie", cookieHeader); // Set-Cookie 헤더로 추가
   }
 }
 
