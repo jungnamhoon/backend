@@ -9,6 +9,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,7 @@ public class LoggingFilter implements Filter {
 
     HttpServletResponse httpResponse = (HttpServletResponse) response;
     log.info("Response Status: [{}]", httpResponse.getStatus());
+    logResponseHeaders(httpResponse);
   }
 
   @Override
@@ -62,5 +64,16 @@ public class LoggingFilter implements Filter {
     }
 
     return paramMap;
+  }
+
+  private void logResponseHeaders(HttpServletResponse response) {
+    Collection<String> headerNames = response.getHeaderNames();
+
+    if (headerNames != null) {
+      for (String headerName : headerNames) {
+        String headerValue = response.getHeader(headerName);
+        log.info("Response Header: [{}] = [{}]", headerName, headerValue);
+      }
+    }
   }
 }
