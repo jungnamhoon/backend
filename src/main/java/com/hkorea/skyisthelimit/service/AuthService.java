@@ -31,13 +31,11 @@ public class AuthService {
     }
 
     String username = jwtHelper.getUsername(refreshToken);
-
-    log.info("accessToken username {}", username);
     String email = jwtHelper.getEmail(refreshToken);
-    String name = jwtHelper.getName(refreshToken);
+    String profileImageUrl = jwtHelper.getProfileImageUrl(refreshToken);
     String role = jwtHelper.getRole(refreshToken);
 
-    return new JwtResponse(jwtHelper.createAccessToken(username, email, name, role));
+    return new JwtResponse(jwtHelper.createAccessToken(username, email, profileImageUrl, role));
 
   }
 

@@ -45,6 +45,11 @@ public class JwtHelper {
         .get("category", String.class);
   }
 
+  public String getProfileImageUrl(String token) {
+    return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
+        .get("profileImageUrl", String.class);
+  }
+
   public Boolean isExpired(String token) {
     return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
         .getExpiration().before(new Date());
@@ -56,7 +61,7 @@ public class JwtHelper {
     return Jwts.builder()
         .claim("username", username)
         .claim("email", email)
-        .claim("name", profileImageUrl)
+        .claim("profileImageUrl", profileImageUrl)
 
         .claim("category", "access")
         .claim("role", role)
