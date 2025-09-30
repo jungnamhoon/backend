@@ -74,7 +74,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     Cookie cookie = new Cookie(key, value);
     cookie.setMaxAge(60 * 60 * 60); // 쿠키의 유효 기간을 설정
-//    cookie.setSecure(true); // HTTPS에서만 전송되도록 설정
+    cookie.setSecure(true); // HTTPS에서만 전송되도록 설정
     cookie.setPath("/"); // 쿠키의 유효 범위를 루트 경로로 설정
     cookie.setHttpOnly(true); // 클라이언트에서 접근 불가능하도록 설정
 
