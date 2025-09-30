@@ -42,7 +42,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       member.setRealName(oAuth2Response.getName());
       member.setEmail(oAuth2Response.getEmail());
       member.setRole("ROLE_USER");
-      member.setProfileImageUrl(minioEndpoint + "/" + "profile" + "/" + "basic-profile.png");
+
+      member.setProfileImageUrl(minioEndpoint + "/skyisthelimit/profile/basic-profile.png");
       member.setNickname("닉네임");
 
       memberRepository.save(member);
