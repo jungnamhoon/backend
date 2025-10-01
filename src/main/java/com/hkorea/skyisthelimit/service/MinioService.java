@@ -63,9 +63,6 @@ public class MinioService {
     String objectName = type.getPath() + "/" + identifier + "_" + Instant.now().toEpochMilli() + "_"
         + originalFilename;
 
-    log.info("objectName============================================= {}", objectName);
-    log.info("contentType============================================= {}", contentType);
-
     try (ByteArrayInputStream bis = new ByteArrayInputStream(imageData)) {
       minioClient.putObject(
           PutObjectArgs.builder()

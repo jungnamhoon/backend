@@ -1,6 +1,8 @@
 package com.hkorea.skyisthelimit.common.config;
 
 import com.hkorea.skyisthelimit.common.filter.LoggingFilter;
+import com.hkorea.skyisthelimit.common.filter.RequestWrapperFilter;
+import com.hkorea.skyisthelimit.common.filter.ResponseWrapperFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,15 +11,42 @@ import org.springframework.context.annotation.Configuration;
 public class FilterConfig {
 
   @Bean
-  public FilterRegistrationBean<LoggingFilter> filterRegistrationBean() {
+  public FilterRegistrationBean<RequestWrapperFilter> requestWrapperFilterRegistrationBean() {
 
-    FilterRegistrationBean<LoggingFilter> registrationBean = new FilterRegistrationBean<>();
+    FilterRegistrationBean<RequestWrapperFilter> registrationBean = new FilterRegistrationBean<>();
 
-    registrationBean.setFilter(new LoggingFilter());
-    registrationBean.addUrlPatterns("/*");
+    registrationBean.setFilter(new RequestWrapperFilter());
+    registrationBean.addUrlPatterns("/api/*", "/auth/*");
     registrationBean.setOrder(Integer.MIN_VALUE);
 
     return registrationBean;
 
   }
+
+  @Bean
+  public FilterRegistrationBean<ResponseWrapperFilter> responseWrapperFilterFilterRegistrationBean() {
+
+    FilterRegistrationBean<ResponseWrapperFilter> registrationBean = new FilterRegistrationBean<>();
+
+    registrationBean.setFilter(new ResponseWrapperFilter());
+    registrationBean.addUrlPatterns("/api/*", "/auth/*");
+    registrationBean.setOrder(Integer.MIN_VALUE + 1);
+
+    return registrationBean;
+
+  }
+
+  @Bean
+  public FilterRegistrationBean<LoggingFilter> loggingFilterFilterRegistrationBean() {
+
+    FilterRegistrationBean<LoggingFilter> registrationBean = new FilterRegistrationBean<>();
+
+    registrationBean.setFilter(new LoggingFilter());
+    registrationBean.addUrlPatterns("/*");
+    registrationBean.setOrder(Integer.MIN_VALUE + 2);
+
+    return registrationBean;
+
+  }
+
 }

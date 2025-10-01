@@ -81,7 +81,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     String cookieHeader = key + "=" + value + "; Max-Age=" + (60 * 60 * 60)
         + "; Path=/; HttpOnly; Secure; SameSite=None";
 
-    log.info("cookieHeader : {}", cookieHeader);
     response.addHeader("Set-Cookie", cookieHeader); // Set-Cookie 헤더로 추가
   }
 }
