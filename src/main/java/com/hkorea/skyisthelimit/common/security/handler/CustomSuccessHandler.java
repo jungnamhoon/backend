@@ -60,9 +60,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     String redirectUrl;
     if (env.equals("skyisthelimit")) {
       redirectUrl = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
-    } else {
+    } else if (env.equals("local")) {
       redirectUrl = "http://localhost:3000?redirectedFromSocialLogin=true";
+    } else {
+      redirectUrl = "https://jfojoohgijdgkigmgklhemocbglekpln.chromiumapp.org";
     }
+
     addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
 
     log.info("redirect to {}", redirectUrl);
