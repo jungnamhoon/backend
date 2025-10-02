@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
   private final JwtHelper jwtHelper;
+  private final MemberService memberService;
 
   public JwtResponse reissueAccessToken(String refreshToken) {
 
@@ -32,7 +33,8 @@ public class AuthService {
 
     String username = jwtHelper.getUsername(refreshToken);
     String email = jwtHelper.getEmail(refreshToken);
-    String profileImageUrl = jwtHelper.getProfileImageUrl(refreshToken);
+//    String profileImageUrl = jwtHelper.getProfileImageUrl(refreshToken);
+    String profileImageUrl = memberService.getMember(username).getProfileImageUrl();
     String role = jwtHelper.getRole(refreshToken);
 
     return new JwtResponse(jwtHelper.createAccessToken(username, email, profileImageUrl, role));
