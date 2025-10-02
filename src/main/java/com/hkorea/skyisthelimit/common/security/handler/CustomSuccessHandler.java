@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,27 +49,16 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
 
-    // 전체 헤더 로그 출력
-    Enumeration<String> headerNames = request.getHeaderNames();
-    if (headerNames != null) {
-      log.info("------ Request Headers ------");
-      while (headerNames.hasMoreElements()) {
-        String headerName = headerNames.nextElement();
-        String headerValue = request.getHeader(headerName);
-        log.info("{}: {}", headerName, headerValue);
-      }
-      log.info("------ End of Headers ------");
-    }
-
-    String host = request.getHeader("Host");
-    log.info("host:{}", host);
+    String redirectParam = request.getParameter("redirect");
     String redirectUrl;
-    if (host.contains("localhost")) {
+
+    if ("skyisthelimit".equals(redirectParam)) {
+      redirectUrl = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
+    } else if ("local".equals(redirectParam)) {
       redirectUrl = "http://localhost:3000?redirectedFromSocialLogin=true";
     } else {
       redirectUrl = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
     }
-
     response.sendRedirect(redirectUrl);
   }
 
