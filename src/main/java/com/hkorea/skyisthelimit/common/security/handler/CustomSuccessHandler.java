@@ -27,10 +27,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
   private static final String REDIRECT_SKYISTHELIMIT = "skyisthelimit";
   private static final String REDIRECT_LOCAL = "local";
   private static final String REDIRECT_EXTENSION = "extension";
+  private static final String REDIRECT_DEV = "dev";
 
   private static final String URL_SKYISTHELIMIT = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
   private static final String URL_LOCAL = "http://localhost:3000?redirectedFromSocialLogin=true";
   private static final String URL_EXTENSION = "https://jfojoohgijdgkigmgklhemocbglekpln.chromiumapp.org";
+  private static final String URL_DEV = "https://skyisthelimit.kro.kr/frontend/main.html";
 
   private final JwtHelper jwtHelper;
   private final MemberService memberService;
@@ -89,6 +91,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
       case REDIRECT_SKYISTHELIMIT -> URL_SKYISTHELIMIT;
       case REDIRECT_LOCAL -> URL_LOCAL;
       case REDIRECT_EXTENSION -> URL_EXTENSION;
+      case REDIRECT_DEV -> URL_DEV;
       default -> URL_LOCAL;
     };
   }
