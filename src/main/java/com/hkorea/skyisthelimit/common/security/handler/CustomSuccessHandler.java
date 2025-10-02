@@ -54,7 +54,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     if (session != null) {
       env = (String) session.getAttribute("redirectUrl");
       session.removeAttribute("redirectUrl");
-      log.debug("env {}", env);
+      log.info("env {}", env);
     }
 
     String redirectUrl;
@@ -65,7 +65,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
     addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
 
-    log.debug("redirect to {}", redirectUrl);
+    log.info("redirect to {}", redirectUrl);
     response.sendRedirect(redirectUrl);
   }
 
