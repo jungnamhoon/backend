@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -25,11 +24,16 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
+  private static final String REDIRECT_SKYISTHELIMIT = "skyisthelimit";
+  private static final String REDIRECT_LOCAL = "local";
+  private static final String REDIRECT_EXTENSION = "extension";
+
+  private static final String URL_SKYISTHELIMIT = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
+  private static final String URL_LOCAL = "http://localhost:3000?redirectedFromSocialLogin=true";
+  private static final String URL_EXTENSION = "https://jfojoohgijdgkigmgklhemocbglekpln.chromiumapp.org";
+
   private final JwtHelper jwtHelper;
   private final MemberService memberService;
-
-  @Value("${frontend.url}")
-  private String frontendUrl;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -48,27 +52,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     String refreshToken = jwtHelper.createRefreshToken(username, email, profileImageUrl, role);
 
-    HttpSession session = request.getSession();
-    String env = null;
-
-    if (session != null) {
-      env = (String) session.getAttribute("redirectUrl");
-      session.removeAttribute("redirectUrl");
-      log.info("env {}", env);
-    }
-
-    String redirectUrl;
-    if (env.equals("skyisthelimit")) {
-      redirectUrl = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
-    } else if (env.equals("local")) {
-      redirectUrl = "http://localhost:3000?redirectedFromSocialLogin=true";
-    } else {
-      redirectUrl = "https://jfojoohgijdgkigmgklhemocbglekpln.chromiumapp.org";
-    }
+    HttpSession session = request.getSession(false);
+    String redirect = (String) session.getAttribute("redirect");
+    session.removeAttribute("redirect");
+    String redirectUrl = determineRedirectUrl(redirect);
 
     addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
 
-    log.info("redirect to {}", redirectUrl);
     response.sendRedirect(redirectUrl);
   }
 
@@ -78,17 +68,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     GrantedAuthority auth = iterator.next();
 
     return auth.getAuthority();
-  }
-
-  private Cookie createCookie(String key, String value) {
-
-    Cookie cookie = new Cookie(key, value);
-    cookie.setMaxAge(60 * 60 * 60);
-    cookie.setSecure(true);
-    cookie.setPath("/");
-    cookie.setHttpOnly(true);
-
-    return cookie;
   }
 
   private void addCookieWithSameSite(HttpServletResponse response, String key, String value) {
@@ -103,6 +82,15 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         + "; Path=/; HttpOnly; Secure; SameSite=None";
 
     response.addHeader("Set-Cookie", cookieHeader); // Set-Cookie 헤더로 추가
+  }
+
+  private String determineRedirectUrl(String redirect) {
+    return switch (redirect) {
+      case REDIRECT_SKYISTHELIMIT -> URL_SKYISTHELIMIT;
+      case REDIRECT_LOCAL -> URL_LOCAL;
+      case REDIRECT_EXTENSION -> URL_EXTENSION;
+      default -> URL_LOCAL;
+    };
   }
 }
 
