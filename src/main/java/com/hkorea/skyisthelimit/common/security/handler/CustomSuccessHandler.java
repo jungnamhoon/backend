@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -47,18 +48,23 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     String refreshToken = jwtHelper.createRefreshToken(username, email, profileImageUrl, role);
 
+    HttpSession session = request.getSession();
+    String env = null;
+
+    if (session != null) {
+      env = (String) session.getAttribute("redirectUrl");
+      session.removeAttribute("redirectUrl");
+      log.info("env {}", env);
+    }
+
+    String redirectUrl;
+    if (env.equals("skyisthelimit")) {
+      redirectUrl = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
+    } else {
+      redirectUrl = "http://localhost:3000?redirectedFromSocialLogin=true";
+    }
     addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
 
-    String redirectParam = request.getParameter("redirect");
-    String redirectUrl;
-
-    if ("skyisthelimit".equals(redirectParam)) {
-      redirectUrl = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
-    } else if ("local".equals(redirectParam)) {
-      redirectUrl = "http://localhost:3000?redirectedFromSocialLogin=true";
-    } else {
-      redirectUrl = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
-    }
     response.sendRedirect(redirectUrl);
   }
 

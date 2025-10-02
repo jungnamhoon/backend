@@ -1,6 +1,7 @@
 package com.hkorea.skyisthelimit.common.config;
 
 import com.hkorea.skyisthelimit.common.filter.LoggingFilter;
+import com.hkorea.skyisthelimit.common.filter.RedirectUrlSavingFilter;
 import com.hkorea.skyisthelimit.common.filter.RequestWrapperFilter;
 import com.hkorea.skyisthelimit.common.filter.ResponseWrapperFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -47,6 +48,15 @@ public class FilterConfig {
 
     return registrationBean;
 
+  }
+
+  @Bean
+  public FilterRegistrationBean<RedirectUrlSavingFilter> redirectUrlSavingFilterRegistrationBean() {
+    FilterRegistrationBean<RedirectUrlSavingFilter> registrationBean = new FilterRegistrationBean<>();
+    registrationBean.setFilter(new RedirectUrlSavingFilter());
+    registrationBean.addUrlPatterns("/oauth2/authorization/*");
+    registrationBean.setOrder(Integer.MIN_VALUE + 3);
+    return registrationBean;
   }
 
 }

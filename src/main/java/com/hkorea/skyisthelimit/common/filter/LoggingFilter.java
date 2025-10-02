@@ -57,6 +57,11 @@ public class LoggingFilter implements Filter {
         logMultipartRequest(httpRequest);
       }
 
+    } else {
+      log.info("[{}] {} Params: [{}]",
+          httpRequest.getMethod(),
+          httpRequest.getRequestURI(),
+          getRequestParams(httpRequest));
     }
 
     chain.doFilter(request, response);

@@ -81,4 +81,5 @@ public class SecurityConfig {
       return configuration;
     };
   }
+
 }
