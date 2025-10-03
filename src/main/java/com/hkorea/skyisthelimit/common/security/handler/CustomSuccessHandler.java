@@ -59,7 +59,11 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     session.removeAttribute("redirect");
     String redirectUrl = determineRedirectUrl(redirect);
 
-//    addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
+    if (redirect.equals(REDIRECT_LOCAL)) {
+      addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
+    } else {
+      addCookie(response, "refreshAuthorization", refreshToken);
+    }
 
     addCookie(response, "refreshAuthorization", refreshToken);
     response.sendRedirect(redirectUrl);
