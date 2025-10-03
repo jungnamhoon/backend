@@ -59,8 +59,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     session.removeAttribute("redirect");
     String redirectUrl = determineRedirectUrl(redirect);
 
-    addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
+//    addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
 
+    addCookie(response, redirectUrl, refreshToken);
     response.sendRedirect(redirectUrl);
   }
 
@@ -84,6 +85,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         + "; Path=/; HttpOnly; Secure; SameSite=None";
 
     response.addHeader("Set-Cookie", cookieHeader); // Set-Cookie 헤더로 추가
+  }
+
+  private void addCookie(HttpServletResponse response, String key, String value) {
+    Cookie cookie = new Cookie(key, value);
+
+    cookie.setHttpOnly(true);
+    cookie.setSecure(true);
+    cookie.setPath("/");
+    cookie.setDomain(".skyisthelimit.kro.kr");
+    cookie.setMaxAge(60 * 60 * 60);
+
+    response.addCookie(cookie);
   }
 
   private String determineRedirectUrl(String redirect) {
