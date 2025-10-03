@@ -61,7 +61,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 //    addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
 
-    addCookie(response, redirectUrl, refreshToken);
+    addCookie(response, "refreshAuthorization", refreshToken);
     response.sendRedirect(redirectUrl);
   }
 
