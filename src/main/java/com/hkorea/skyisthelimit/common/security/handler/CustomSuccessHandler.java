@@ -32,7 +32,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
   private static final String URL_SKYISTHELIMIT = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
   private static final String URL_LOCAL = "http://localhost:3000?redirectedFromSocialLogin=true";
   private static final String URL_EXTENSION = "https://jfojoohgijdgkigmgklhemocbglekpln.chromiumapp.org";
-  private static final String URL_DEV = "https://api.skyisthelimit.kro.kr/frontend/main.html";
+  private static final String URL_DEV = "https://test.skyisthelimit.cloud/frontend/main.html";
 
   private final JwtHelper jwtHelper;
   private final MemberService memberService;
