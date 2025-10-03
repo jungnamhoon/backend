@@ -93,7 +93,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     cookie.setHttpOnly(true);
     cookie.setSecure(true);
     cookie.setPath("/");
-    cookie.setDomain("skyisthelimit.kro.kr");
+    cookie.setDomain("skyisthelimit.cloud");
     cookie.setMaxAge(60 * 60 * 60);
 
     response.addCookie(cookie);
