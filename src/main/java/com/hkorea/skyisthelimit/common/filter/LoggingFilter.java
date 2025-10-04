@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
@@ -31,24 +32,33 @@ public class LoggingFilter implements Filter {
       throws IOException, ServletException {
 
     HttpServletRequest httpRequest = (HttpServletRequest) request;
+    HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+    String requestId = UUID.randomUUID().toString();
+    httpRequest.setAttribute("X-Request-ID", requestId);
+    httpResponse.addHeader("X-Request-ID", requestId);
+
     // request
     if (request instanceof CustomHttpRequestWrapper requestWrapper) {
       String requestBody = new String(requestWrapper.getRequestBody());
 
       if (!requestBody.isEmpty()) {
-        log.info("[{}] {} Body: [{}]",
+        log.info("id: [{}] [{}] {} Body: [{}]",
+            requestId,
             httpRequest.getMethod(),
             httpRequest.getRequestURI(),
             requestBody);
       }
 
       if (httpRequest.getParameterNames().hasMoreElements()) {
-        log.info("[{}] {} Params: [{}]",
+        log.info("id: [{}] [{}] {} Params: [{}]",
+            requestId,
             httpRequest.getMethod(),
             httpRequest.getRequestURI(),
             getRequestParams(httpRequest));
       } else {
-        log.info("[{}] {}",
+        log.info("id: [{}] [{}] {}",
+            requestId,
             httpRequest.getMethod(),
             httpRequest.getRequestURI());
       }
@@ -58,16 +68,14 @@ public class LoggingFilter implements Filter {
       }
 
     } else {
-      log.info("[{}] {} Params: [{}]",
+      log.info("id: [{}] [{}] {} Params: [{}]",
+          requestId,
           httpRequest.getMethod(),
           httpRequest.getRequestURI(),
           getRequestParams(httpRequest));
     }
 
     chain.doFilter(request, response);
-
-    // response
-    HttpServletResponse httpResponse = (HttpServletResponse) response;
 
     // 특정 URL에 대해서만 응답 헤더 로그를 출력
     if (httpRequest.getRequestURI().equals("/login/oauth2/code/google")) {
@@ -85,16 +93,19 @@ public class LoggingFilter implements Filter {
         Object json = mapper.readValue(responseBody, Object.class);
         String prettyBody = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
 
-        log.info("Response Status: [{}] URL: [{}] Body: [{}]",
+        log.info("id: [{}] Response Status: [{}] URL: [{}] Body: [{}]",
+            requestId,
             httpResponse.getStatus(),
             httpRequest.getRequestURI(), prettyBody);
       } else {
-        log.info("Response Status: [{}] URL: [{}] Body: [Empty]",
+        log.info("id: [{}] Response Status: [{}] URL: [{}] Body: [Empty]",
+            requestId,
             httpResponse.getStatus(),
             httpRequest.getRequestURI());
       }
     } else {
-      log.info("Response Status: [{}] URL: [{}] Not a CustomHttpResponseWrapper",
+      log.info("id: [{}] Response Status: [{}] URL: [{}] Not a CustomHttpResponseWrapper",
+          requestId,
           httpResponse.getStatus(),
           httpRequest.getRequestURI());
     }
