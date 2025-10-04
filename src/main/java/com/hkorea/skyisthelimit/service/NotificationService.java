@@ -33,9 +33,7 @@ public class NotificationService {
     emitter.onCompletion(() -> emitterRepository.deleteByUsername(username));
     emitter.onTimeout(() -> emitterRepository.deleteByUsername(username));
     emitter.onError((ex) -> emitterRepository.deleteByUsername(username));
-
-    emitterRepository.logAllSubscribers();
-
+    
     Member member = memberService.getMember(username);
     List<Notification> oldNotifications = fetchNotificationsForMember(
         member);

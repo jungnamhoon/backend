@@ -24,11 +24,4 @@ public class EmitterRepository {
   public void deleteByUsername(String username) {
     emitters.remove(username);
   }
-
-  public void logAllSubscribers() {
-
-    System.out.println("===== 현재 구독자 목록 =====");
-    emitters.keySet().forEach(username -> log.info("username: {}", username));
-    System.out.println("==========================");
-  }
 }
