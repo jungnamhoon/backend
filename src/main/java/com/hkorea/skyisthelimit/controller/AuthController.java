@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("api/auth")
 @RequiredArgsConstructor
 public class AuthController implements AuthControllerDocs {
 
   private final AuthService authService;
 
-  @GetMapping("/reissue/access")
+  @GetMapping("/access-token")
   public ResponseEntity<ApiResponse<JwtResponse>> reissueAccessToken(
       @CookieValue(value = "refreshAuthorization") String refreshToken) {
 
