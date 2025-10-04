@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -76,24 +78,20 @@ public class GlobalExceptionHandler {
   //리소스 없음 처리
   @ExceptionHandler(NoResourceFoundException.class)
   public ResponseEntity<ApiResponse<String>> handleNoResourceFoundException(
-      NoResourceFoundException e, HttpServletRequest request) {
+      NoResourceFoundException e, HttpServletRequest request, HttpServletResponse response) {
 
-    try {
-      String path = request.getRequestURI();
-      log.error("리소스가 존재하지 않습니다. path: {}", path);
-      return ApiResponse.of(ErrorCode.NOT_FOUND);
-
-    } catch (Exception ex) {
-      log.error("NoResourceFoundException 핸들러 내부에서 예외 발생", ex);
-      throw ex;
-    }
+    log.error("리소스가 존재하지 않습니다. path: {}", request.getRequestURI());
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    return ApiResponse.of(ErrorCode.NOT_FOUND);
   }
 
   // 처리되지 않은 예외
   @ExceptionHandler(Exception.class)
   protected ResponseEntity<ApiResponse<String>> handleException(Exception e,
-      HttpServletRequest request) throws Exception {
+      HttpServletRequest request, HttpServletResponse response) throws Exception {
+    
     log.error("처리되지 않은 예외: ", e);
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     return ApiResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
   }
 
