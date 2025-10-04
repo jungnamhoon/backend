@@ -1,11 +1,11 @@
 package com.hkorea.skyisthelimit.common.filter;
 
-import static org.springframework.web.multipart.support.MultipartResolutionDelegate.isMultipartRequest;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hkorea.skyisthelimit.common.CustomHttpRequestWrapper;
 import com.hkorea.skyisthelimit.common.CustomHttpResponseWrapper;
+import com.hkorea.skyisthelimit.common.utils.RequestLoggingUtils;
+import com.hkorea.skyisthelimit.common.utils.ResponseLoggingUtils;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -15,17 +15,22 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 @Slf4j
 public class LoggingFilter implements Filter {
+
+  private static final List<String> EXCLUDE_PREFIXES = List.of(
+      "/v3",
+      "/swagger-ui",
+      "/favicon"
+  );
+
+  private static final String SSE_PATH = "/api/notifications/stream";
+
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -38,77 +43,11 @@ public class LoggingFilter implements Filter {
     httpRequest.setAttribute("X-Request-ID", requestId);
     httpResponse.addHeader("X-Request-ID", requestId);
 
-    // request
-    if (request instanceof CustomHttpRequestWrapper requestWrapper) {
-      String requestBody = new String(requestWrapper.getRequestBody());
-
-      if (!requestBody.isEmpty()) {
-        log.info("id: [{}] [{}] {} Body: [{}]",
-            requestId,
-            httpRequest.getMethod(),
-            httpRequest.getRequestURI(),
-            requestBody);
-      }
-
-      if (httpRequest.getParameterNames().hasMoreElements()) {
-        log.info("id: [{}] [{}] {} Params: [{}]",
-            requestId,
-            httpRequest.getMethod(),
-            httpRequest.getRequestURI(),
-            getRequestParams(httpRequest));
-      } else {
-        log.info("id: [{}] [{}] {}",
-            requestId,
-            httpRequest.getMethod(),
-            httpRequest.getRequestURI());
-      }
-
-      if (isMultipartRequest(httpRequest)) {
-        logMultipartRequest(httpRequest);
-      }
-
-    } else {
-      log.info("id: [{}] [{}] {} Params: [{}]",
-          requestId,
-          httpRequest.getMethod(),
-          httpRequest.getRequestURI(),
-          getRequestParams(httpRequest));
-    }
+    logRequest(requestId, httpRequest);
 
     chain.doFilter(request, response);
 
-    // 특정 URL에 대해서만 응답 헤더 로그를 출력
-    if (httpRequest.getRequestURI().equals("/login/oauth2/code/google")) {
-      logResponseHeaders(httpResponse);
-    }
-
-    if (response instanceof CustomHttpResponseWrapper responseWrapper) {
-      byte[] responseData = responseWrapper.getResponseData();
-
-      if (responseData != null && responseData.length > 0) {
-
-        String responseBody = new String(responseData);
-
-        ObjectMapper mapper = new ObjectMapper();
-        Object json = mapper.readValue(responseBody, Object.class);
-        String prettyBody = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-
-        log.info("id: [{}] Response Status: [{}] URL: [{}] Body: [{}]",
-            requestId,
-            httpResponse.getStatus(),
-            httpRequest.getRequestURI(), prettyBody);
-      } else {
-        log.info("id: [{}] Response Status: [{}] URL: [{}] Body: [Empty]",
-            requestId,
-            httpResponse.getStatus(),
-            httpRequest.getRequestURI());
-      }
-    } else {
-      log.info("id: [{}] Response Status: [{}] URL: [{}] Not a CustomHttpResponseWrapper",
-          requestId,
-          httpResponse.getStatus(),
-          httpRequest.getRequestURI());
-    }
+    logResponse(requestId, httpRequest, httpResponse);
 
   }
 
@@ -122,56 +61,61 @@ public class LoggingFilter implements Filter {
     Filter.super.init(filterConfig);
   }
 
-  private Map<String, String> getRequestParams(HttpServletRequest request) {
+  private void logRequest(String requestId, HttpServletRequest httpRequest) {
 
-    Map<String, String> paramMap = new HashMap<>();
-    Enumeration<String> parameterNames = request.getParameterNames();
+    String uri = httpRequest.getRequestURI();
 
-    while (parameterNames.hasMoreElements()) {
-      String paramName = parameterNames.nextElement();
-      paramMap.put(paramName, request.getParameter(paramName));
+    if (isExcludedUri(uri)) {
+      return;
     }
 
-    return paramMap;
+    if (httpRequest instanceof CustomHttpRequestWrapper requestWrapper) {
+
+      String body = new String(requestWrapper.getRequestBody());
+
+      RequestLoggingUtils.logRequest(requestId, httpRequest, body);
+
+    }
   }
 
-  private void logResponseHeaders(HttpServletResponse response) {
-    Map<String, Collection<String>> headers = new HashMap<>();
-    Collection<String> headerNames = response.getHeaderNames();
+  private void logResponse(String requestId, HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) throws IOException, ServletException {
 
-    // 모든 헤더를 순회
-    for (String headerName : headerNames) {
-      // 각 헤더의 값을 리스트로 받아옴
-      Collection<String> headerValues = response.getHeaders(headerName);
-      headers.put(headerName, headerValues);
+    String uri = httpRequest.getRequestURI();
+
+    if (isExcludedUri(uri)) {
+      return;
     }
 
-    // 출력
+    if (uri.equals(SSE_PATH)) {
+      ResponseLoggingUtils.logSseSubscription(requestId, httpRequest);
+      return;
+    }
+
+    if (httpResponse instanceof CustomHttpResponseWrapper responseWrapper) {
+
+      String body = new String(responseWrapper.getResponseData());
+
+      ResponseLoggingUtils.logResponse(requestId, httpRequest, httpResponse,
+          toPretty(body));
+    }
+  }
+
+  private boolean isExcludedUri(String uri) {
+    return EXCLUDE_PREFIXES.stream().anyMatch(uri::startsWith);
+  }
+
+  private String toPretty(String responseBody) {
+
+    if (responseBody == null || responseBody.isEmpty()) {
+      return null;
+    }
+
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      String jsonHeaders = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(headers);
-      log.info("Response Headers: {}", jsonHeaders);
+      Object json = objectMapper.readValue(responseBody, Object.class);
+      return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
     } catch (JsonProcessingException e) {
-      log.error("Error processing response headers to JSON", e);
+      return null;
     }
-  }
-
-  private void logMultipartRequest(HttpServletRequest request) {
-
-    StandardServletMultipartResolver multipartResolver = new StandardServletMultipartResolver();
-    MultipartHttpServletRequest multipart = multipartResolver.resolveMultipart(request);
-
-    multipart.getFileMap().forEach((paramName, file) -> {
-      log.info("File Parameter Name: {}, Original File Name: {}, Size: {} bytes",
-          paramName,
-          file.getOriginalFilename(),
-          file.getSize());
-    });
-
-    multipart.getParameterMap().forEach((paramName, value) -> {
-      log.info("Form Field - Name: {}, Value: {}",
-          paramName,
-          value);
-    });
   }
 }
