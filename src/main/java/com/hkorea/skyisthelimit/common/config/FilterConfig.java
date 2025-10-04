@@ -8,6 +8,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
 @Configuration
 public class FilterConfig {
 
@@ -17,7 +18,7 @@ public class FilterConfig {
     FilterRegistrationBean<RequestWrapperFilter> registrationBean = new FilterRegistrationBean<>();
 
     registrationBean.setFilter(new RequestWrapperFilter());
-    registrationBean.addUrlPatterns("/api/*", "/auth/*");
+    registrationBean.addUrlPatterns("/*");
     registrationBean.setOrder(Integer.MIN_VALUE);
 
     return registrationBean;
@@ -30,7 +31,7 @@ public class FilterConfig {
     FilterRegistrationBean<ResponseWrapperFilter> registrationBean = new FilterRegistrationBean<>();
 
     registrationBean.setFilter(new ResponseWrapperFilter());
-    registrationBean.addUrlPatterns("/api/*", "/auth/*");
+    registrationBean.addUrlPatterns("/*");
     registrationBean.setOrder(Integer.MIN_VALUE + 1);
 
     return registrationBean;
