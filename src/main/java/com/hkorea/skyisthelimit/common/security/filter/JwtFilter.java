@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,7 +29,7 @@ public class JwtFilter extends OncePerRequestFilter {
   protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
     String path = request.getRequestURI();
 
-    return path.equals("/auth/reissue/access") ||
+    return path.equals("/api/auth/access-token") ||
         path.startsWith("/swagger-ui/") ||
         path.startsWith("/v3/api-docs") ||
         path.equals("/swagger-ui.html");
@@ -38,60 +39,65 @@ public class JwtFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
 
-    String requestURI = request.getRequestURI();
+    String accessToken = extractToken(request, response);
 
-    // Swagger 경로는 제외
-    if (requestURI.startsWith("/swagger-ui") || requestURI.startsWith("/v3/api-docs")) {
-      filterChain.doFilter(request, response); // 필터를 통과시킴
+    if (accessToken == null) {
+      sendError(response, "Authorization header missing or invalid");
       return;
     }
-
-    String authorizationHeader = request.getHeader("Authorization");
-
-    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      response.setContentType("application/json");
-      response.getWriter().write("{\"error\": \"Authorization header is missing or invalid\"}");
-      return;
-    }
-
-    String accessToken = authorizationHeader.substring(7);
 
     try {
       jwtHelper.isExpired(accessToken);
     } catch (ExpiredJwtException e) {
-
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      response.setContentType("application/json");
-      response.getWriter().write("{\"error\": \"Access token expired\"}");
-
+      sendError(response, "Token expired");
       return;
     }
 
     String category = jwtHelper.getCategory(accessToken);
 
     if (!category.equals("access")) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      response.setContentType("application/json");
-      response.getWriter().write("{\"error\": \"Not Access Token\"}");
+      sendError(response, "Not a access token");
+      return;
     }
 
-    String username = jwtHelper.getUsername(accessToken);
-    String email = jwtHelper.getEmail(accessToken);
-    String name = jwtHelper.getName(accessToken);
-    String role = jwtHelper.getRole(accessToken);
-
-    UserDTO userDTO = new UserDTO();
-    userDTO.setUsername(username);
-    userDTO.setEmail(email);
-    userDTO.setRealName(name);
-    userDTO.setRole(role);
-
-    CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
-    Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null,
-        customOAuth2User.getAuthorities());
-    SecurityContextHolder.getContext().setAuthentication(authToken);
+    setAuthentication(accessToken);
 
     filterChain.doFilter(request, response);
   }
+
+  @Nullable
+  private String extractToken(HttpServletRequest request, HttpServletResponse response) {
+    String authorizationHeader = request.getHeader("Authorization");
+
+    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+      return null;
+    }
+
+    return authorizationHeader.substring(7);
+  }
+
+  private void sendError(HttpServletResponse response, String message)
+      throws IOException {
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    response.setContentType("application/json");
+    response.getWriter().write("{\"error\": \"" + message + "\"}");
+  }
+
+  private void setAuthentication(String accessToken) {
+
+    UserDTO userDTO = UserDTO.builder()
+        .username(jwtHelper.getUsername(accessToken))
+        .email(jwtHelper.getEmail(accessToken))
+        .realName(jwtHelper.getName(accessToken))
+        .role(jwtHelper.getRole(accessToken))
+        .build();
+
+    CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
+
+    Authentication authToken = new UsernamePasswordAuthenticationToken(
+        customOAuth2User, null, customOAuth2User.getAuthorities());
+
+    SecurityContextHolder.getContext().setAuthentication(authToken);
+  }
+
 }
