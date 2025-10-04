@@ -76,15 +76,13 @@ public class GlobalExceptionHandler {
   //리소스 없음 처리
   @ExceptionHandler(NoResourceFoundException.class)
   public ResponseEntity<ApiResponse<String>> handleNoResourceFoundException(
-      HttpServletRequest request) {
-
+      NoResourceFoundException e, HttpServletRequest request) {
     String path = request.getRequestURI();
     log.error("요청한 리소스를 찾을 수 없습니다: {}", path);
-
     return ApiResponse.of(ErrorCode.NOT_FOUND);
   }
 
-
+  // 처리되지 않은 예외
   @ExceptionHandler(Exception.class)
   protected ResponseEntity<ApiResponse<String>> handleException(Exception e,
       HttpServletRequest request) throws Exception {
