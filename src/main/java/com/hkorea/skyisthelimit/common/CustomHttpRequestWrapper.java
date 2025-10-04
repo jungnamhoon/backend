@@ -10,10 +10,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 @Slf4j
+@Getter
 public class CustomHttpRequestWrapper extends HttpServletRequestWrapper {
 
   private final byte[] requestBody;
@@ -64,9 +66,5 @@ public class CustomHttpRequestWrapper extends HttpServletRequestWrapper {
       }
     };
 
-  }
-
-  public byte[] getRequestBody() {
-    return this.requestBody;
   }
 }
