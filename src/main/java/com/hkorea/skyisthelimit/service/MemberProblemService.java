@@ -1,6 +1,5 @@
 package com.hkorea.skyisthelimit.service;
 
-import static com.hkorea.skyisthelimit.controller.TodayController.getToday;
 import static com.hkorea.skyisthelimit.repository.predicate.MemberProblemPredicates.usernameEq;
 
 import com.hkorea.skyisthelimit.common.exception.BusinessException;
@@ -24,6 +23,7 @@ import com.hkorea.skyisthelimit.service.enums.SolveStatus;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
@@ -167,7 +167,7 @@ public class MemberProblemService {
   private MemberProblem handleCorrectAlreadySolved(MemberProblem memberProblem, Long submitId) {
     memberProblem.setLastSubmitId(submitId);
     memberProblem.incrementSolvedCount();
-    memberProblem.setSolvedDate(getToday());
+    memberProblem.setSolvedDate(LocalDate.now());
 
     return memberProblem;
   }
@@ -176,7 +176,7 @@ public class MemberProblemService {
 
     memberProblem.setLastSubmitId(submitId);
     memberProblem.setStatus(MemberProblemStatus.MULTI_TRY);
-    memberProblem.setSolvedDate(getToday());
+    memberProblem.setSolvedDate(LocalDate.now());
     memberProblem.incrementSolvedCount();
 
     memberProblem.getMember().recordNewProblemSolved(memberProblem);

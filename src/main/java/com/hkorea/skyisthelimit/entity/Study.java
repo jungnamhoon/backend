@@ -1,7 +1,5 @@
 package com.hkorea.skyisthelimit.entity;
 
-import static com.hkorea.skyisthelimit.controller.TodayController.getToday;
-
 import com.hkorea.skyisthelimit.dto.study.request.StudyUpdateRequest;
 import com.hkorea.skyisthelimit.entity.embeddable.DailyProblem;
 import com.hkorea.skyisthelimit.entity.enums.ProblemRank;
@@ -129,14 +127,14 @@ public class Study {
 
   public void updateStreak() {
 
-    LocalDate today = getToday();
+    LocalDate today = LocalDate.now();
 
     // 오늘 이미 streak가 계산되었으면 return
     if (lastStreakUpdatedDate != null && lastStreakUpdatedDate.equals(today)) {
       return;
     }
     incrementStreak();
-    lastStreakUpdatedDate = getToday();
+    lastStreakUpdatedDate = LocalDate.now();
   }
 
   public boolean isNotAdmin(String username) {
@@ -149,7 +147,7 @@ public class Study {
   }
 
   public boolean isDailyProblemsUpToDate() {
-    LocalDate today = getToday();
+    LocalDate today = LocalDate.now();
     return dailyProblems.stream()
         .anyMatch(p -> p.getAssignedDate().equals(today));
   }

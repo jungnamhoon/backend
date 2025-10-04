@@ -1,7 +1,5 @@
 package com.hkorea.skyisthelimit.entity;
 
-import static com.hkorea.skyisthelimit.controller.TodayController.getToday;
-
 import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -54,7 +52,7 @@ public class MemberProblem {
         .member(member)
         .problem(problem)
         .status(status)
-        .solvedDate(status == MemberProblemStatus.SOLVED ? getToday() : null)
+        .solvedDate(status == MemberProblemStatus.SOLVED ? LocalDate.now() : null)
         .solvedCount(0)
         .build();
   }
@@ -70,7 +68,7 @@ public class MemberProblem {
   }
 
   public void setSolvedDate(LocalDate solvedDate) {
-    this.solvedDate = (solvedDate != null) ? solvedDate : getToday();
+    this.solvedDate = (solvedDate != null) ? solvedDate : LocalDate.now();
   }
 
 }

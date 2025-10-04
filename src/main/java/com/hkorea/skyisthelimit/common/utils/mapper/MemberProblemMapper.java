@@ -40,6 +40,7 @@ public class MemberProblemMapper {
         .baekjoonId(memberProblem.getProblem().getBaekjoonId())
         .title(memberProblem.getProblem().getTitle())
         .status(memberProblem.getStatus())
+        .solvedDate(memberProblem.getSolvedDate())
         .build();
   }
 

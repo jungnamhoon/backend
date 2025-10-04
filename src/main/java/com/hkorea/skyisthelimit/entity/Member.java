@@ -1,7 +1,5 @@
 package com.hkorea.skyisthelimit.entity;
 
-import static com.hkorea.skyisthelimit.controller.TodayController.getToday;
-
 import com.hkorea.skyisthelimit.dto.member.request.MemberUpdateRequest;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -41,7 +39,7 @@ public class Member {
   private String realName; // 김남훈
   private String email; // southernlight3816@gmail.com
   private String role; // ROLE_USER
-  
+
   private String profileImageUrl;
   private String nickname;
   private int score;
@@ -68,7 +66,7 @@ public class Member {
     addMemberProblem(memberProblem);
     incrementScore(memberProblem.getProblem());
     incrementTotalSolvedProblems();
-    updateStreak();
+//    updateStreak();
     updateLastSolvedDate();
   }
 
@@ -84,9 +82,9 @@ public class Member {
 
     if (lastSolvedDate == null) {
       streak = 1;
-    } else if (lastSolvedDate.equals(getToday())) {
+    } else if (lastSolvedDate.equals(LocalDate.now())) {
       // 같은 날에 여러번 푸는 경우 streak 변화 없음
-    } else if (lastSolvedDate.plusDays(1).equals(getToday())) {
+    } else if (lastSolvedDate.plusDays(1).equals(LocalDate.now())) {
       streak += 1;
     } else {
       streak = 1;
@@ -94,7 +92,7 @@ public class Member {
   }
 
   private void updateLastSolvedDate() {
-    this.lastSolvedDate = getToday();
+    this.lastSolvedDate = LocalDate.now();
   }
 
   private void addMemberProblem(MemberProblem memberProblem) {

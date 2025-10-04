@@ -1,7 +1,5 @@
 package com.hkorea.skyisthelimit.entity.embeddable;
 
-import static com.hkorea.skyisthelimit.controller.TodayController.getToday;
-
 import com.hkorea.skyisthelimit.entity.Problem;
 import jakarta.persistence.Embeddable;
 import java.time.LocalDate;
@@ -27,7 +25,7 @@ public class DailyProblem {
     return DailyProblem.builder()
         .problemId(problem.getBaekjoonId())
         .problemTitle(problem.getTitle())
-        .assignedDate(getToday())
+        .assignedDate(LocalDate.now())
         .build();
   }
 

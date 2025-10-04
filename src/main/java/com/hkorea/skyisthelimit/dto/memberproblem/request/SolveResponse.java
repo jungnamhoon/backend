@@ -2,6 +2,7 @@ package com.hkorea.skyisthelimit.dto.memberproblem.request;
 
 import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Data;
 
@@ -29,4 +30,11 @@ public class SolveResponse {
       example = "SOLVED"
   )
   private MemberProblemStatus status;
+
+  @Schema(
+      title = "문제를 푼 날짜",
+      description = "회원이 문제를 푼 날짜",
+      example = "2025-10-04"
+  )
+  private LocalDate solvedDate;
 }

@@ -1,7 +1,5 @@
 package com.hkorea.skyisthelimit.entity;
 
-import static com.hkorea.skyisthelimit.controller.TodayController.getToday;
-
 import com.hkorea.skyisthelimit.entity.enums.StudyProblemStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -55,13 +53,13 @@ public class StudyProblem {
     return StudyProblem.builder()
         .study(study)
         .problem(problem)
-        .assignedDate(getToday())
+        .assignedDate(LocalDate.now())
         .status(StudyProblemStatus.UNSOLVED)
         .build();
   }
 
   public void markToSolved() {
     this.status = StudyProblemStatus.SOLVED;
-    this.solvedDate = getToday();
+    this.solvedDate = LocalDate.now();
   }
 }
