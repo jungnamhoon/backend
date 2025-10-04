@@ -13,7 +13,8 @@ public enum ErrorCode {
   VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "C002", "요청 데이터 검증에 실패했습니다"),
   INVALID_FORMAT(HttpStatus.BAD_REQUEST, "C003", "값 형식이 올바르지 않습니다"),
   MALFORMED_JSON(HttpStatus.BAD_REQUEST, "C004", "JSON 형식이 올바르지 않습니다"),
-  INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "서버 내부 오류가 발생했습니다"),
+  NOT_FOUND(HttpStatus.BAD_REQUEST, "C005", "해당 리소스를 찾을 수 없습니다"),
+  INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C006", "서버 내부 오류가 발생했습니다"),
 
   REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "A001", "리프레시 토큰이 유효하지 않습니다"),
   REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "A002", "리프레시 토큰이 만료되었습니다"),

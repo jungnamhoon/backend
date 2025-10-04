@@ -12,6 +12,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -35,7 +36,7 @@ public class GlobalExceptionHandler {
         .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
         .toList();
 
-    log.warn("DTO 검증 예외: {}", details);
+    log.error("DTO 검증 예외: {}", details);
     return ApiResponse.of(ErrorCode.VALIDATION_FAILED, details);
   }
 
@@ -63,14 +64,26 @@ public class GlobalExceptionHandler {
           field, value, targetType
       );
 
-      log.warn("Request body 타입 오류: {}", message);
+      log.error("Request body 타입 오류: {}", message);
       return ApiResponse.of(ErrorCode.INVALID_FORMAT, message);
     }
 
     // JSON 문법 오류, 매핑 오류
-    log.warn("Malformed JSON 요청: {}", e.getMessage());
+    log.error("Malformed JSON 요청: {}", e.getMessage());
     return ApiResponse.of(ErrorCode.MALFORMED_JSON);
   }
+
+  //리소스 없음 처리
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ApiResponse<String>> handleNoResourceFoundException(
+      HttpServletRequest request) {
+
+    String path = request.getRequestURI();
+    log.error("요청한 리소스를 찾을 수 없습니다: {}", path);
+
+    return ApiResponse.of(ErrorCode.NOT_FOUND);
+  }
+
 
   @ExceptionHandler(Exception.class)
   protected ResponseEntity<ApiResponse<String>> handleException(Exception e,
