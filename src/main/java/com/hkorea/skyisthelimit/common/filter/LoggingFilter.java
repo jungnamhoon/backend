@@ -92,6 +92,11 @@ public class LoggingFilter implements Filter {
       return;
     }
 
+    if (uri.equals("/api/auth/access-token")) {
+      ResponseLoggingUtils.logAccessTokenResponse(requestId, httpRequest, httpResponse);
+      return;
+    }
+
     if (httpResponse instanceof CustomHttpResponseWrapper responseWrapper) {
 
       String body = new String(responseWrapper.getResponseData());

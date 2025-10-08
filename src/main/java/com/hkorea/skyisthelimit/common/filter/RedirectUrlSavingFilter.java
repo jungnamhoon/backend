@@ -1,5 +1,6 @@
 package com.hkorea.skyisthelimit.common.filter;
 
+import com.hkorea.skyisthelimit.common.utils.ResponseUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,13 +15,11 @@ public class RedirectUrlSavingFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    
+
     String redirect = request.getParameter("redirect");
 
     if (redirect == null || redirect.isEmpty()) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.setContentType("text/html;charset=utf-8");
-      response.getWriter().write("{\"error\":\"redirect 파라미터가 필요합니다.\"}");
+      ResponseUtils.sendBadRequest(response, "The redirect parameter is required.");
       return;
     }
 

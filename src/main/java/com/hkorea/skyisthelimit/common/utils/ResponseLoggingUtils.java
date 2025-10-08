@@ -12,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResponseLoggingUtils {
 
+  private ResponseLoggingUtils() {
+  }
+
   public static void logResponse(String requestId, HttpServletRequest request,
       HttpServletResponse response, String body) {
 
@@ -23,6 +26,18 @@ public class ResponseLoggingUtils {
         (body == null || body.isEmpty()) ? "{}" : body);
 
   }
+
+  public static void logAccessTokenResponse(String requestId, HttpServletRequest request,
+      HttpServletResponse response) {
+
+    log.info("[Response] [{}] [{} {}] [{}]\nBody: [{}]",
+        requestId,
+        request.getMethod(),
+        request.getRequestURI(),
+        response.getStatus(),
+        "{ \"accessToken\" : \"[PROTECTED]\" }");
+  }
+
 
   public static void logSseSubscription(String requestId, HttpServletRequest request) {
     log.info("[Response] [{}] [{} {}] - SSE 구독 시작됨",

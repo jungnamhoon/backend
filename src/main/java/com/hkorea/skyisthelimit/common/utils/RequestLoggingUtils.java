@@ -15,6 +15,9 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 @Slf4j
 public class RequestLoggingUtils {
 
+  private RequestLoggingUtils() {
+  }
+
   public static void logRequest(String requestId, HttpServletRequest request, String body) {
 
     if (isMultipartRequest(request)) {
@@ -66,5 +69,4 @@ public class RequestLoggingUtils {
           value);
     });
   }
-
 }
