@@ -3,6 +3,7 @@ package com.hkorea.skyisthelimit.common.security.filter;
 import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.common.security.dto.UserDTO;
 import com.hkorea.skyisthelimit.common.utils.JwtHelper;
+import com.hkorea.skyisthelimit.common.utils.ResponseUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,7 +33,8 @@ public class JwtFilter extends OncePerRequestFilter {
     return path.equals("/api/auth/access-token") ||
         path.startsWith("/swagger-ui/") ||
         path.startsWith("/v3/api-docs") ||
-        path.equals("/swagger-ui.html");
+        path.equals("/swagger-ui.html") ||
+        path.equals("/api/test/token");
   }
 
   @Override
@@ -42,21 +44,21 @@ public class JwtFilter extends OncePerRequestFilter {
     String accessToken = extractToken(request, response);
 
     if (accessToken == null) {
-      sendError(response, "Authorization header missing or invalid");
+      ResponseUtils.sendUnauthorized(response, "Authorization header missing or invalid");
       return;
     }
 
     try {
       jwtHelper.isExpired(accessToken);
     } catch (ExpiredJwtException e) {
-      sendError(response, "Token expired");
+      ResponseUtils.sendUnauthorized(response, "Token has expired. Please refresh");
       return;
     }
 
     String category = jwtHelper.getCategory(accessToken);
 
     if (!category.equals("access")) {
-      sendError(response, "Not a access token");
+      ResponseUtils.sendUnauthorized(response, "Not a access token");
       return;
     }
 
@@ -74,13 +76,6 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     return authorizationHeader.substring(7);
-  }
-
-  private void sendError(HttpServletResponse response, String message)
-      throws IOException {
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-    response.setContentType("application/json");
-    response.getWriter().write("{\"error\": \"" + message + "\"}");
   }
 
   private void setAuthentication(String accessToken) {
