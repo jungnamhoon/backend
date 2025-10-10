@@ -1,6 +1,7 @@
 package com.hkorea.skyisthelimit.repository;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -23,5 +24,13 @@ public class EmitterRepository {
 
   public void deleteByUsername(String username) {
     emitters.remove(username);
+  }
+
+  public Map<String, SseEmitter> getEmitters() {
+    return emitters;
+  }
+
+  public Set<String> getAllSubscribers() {
+    return emitters.keySet();
   }
 }

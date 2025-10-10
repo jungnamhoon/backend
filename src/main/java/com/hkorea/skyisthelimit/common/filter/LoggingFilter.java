@@ -88,7 +88,7 @@ public class LoggingFilter implements Filter {
     }
 
     if (uri.equals(SSE_PATH)) {
-      ResponseLoggingUtils.logSseSubscription(requestId, httpRequest);
+      ResponseLoggingUtils.logSseSubscription(requestId, httpRequest, httpResponse);
       return;
     }
 

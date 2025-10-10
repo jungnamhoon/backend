@@ -7,6 +7,7 @@ import com.hkorea.skyisthelimit.controller.docs.NotificationControllerDocs;
 import com.hkorea.skyisthelimit.dto.notification.response.NotificationResponse;
 import com.hkorea.skyisthelimit.service.NotificationService;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,4 +37,10 @@ public class NotificationController implements NotificationControllerDocs {
   public SseEmitter subscribe(@AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
     return notificationService.subscribe(customOAuth2User.getUsername());
   }
+
+  @GetMapping("/notifications/subscriptions")
+  public Set<String> getSubscriptions() {
+    return notificationService.getAllSubscribers();
+  }
+
 }

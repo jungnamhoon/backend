@@ -18,7 +18,7 @@ public class ResponseLoggingUtils {
   public static void logResponse(String requestId, HttpServletRequest request,
       HttpServletResponse response, String body) {
 
-    log.info("[Response] [{}] [{} {}] [{}]\nBody: [{}]",
+    log.info("[RESPONSE] [{}] [{} {}] [{}]\nBody: [{}]",
         requestId,
         request.getMethod(),
         request.getRequestURI(),
@@ -30,7 +30,7 @@ public class ResponseLoggingUtils {
   public static void logAccessTokenResponse(String requestId, HttpServletRequest request,
       HttpServletResponse response) {
 
-    log.info("[Response] [{}] [{} {}] [{}]\nBody: [{}]",
+    log.info("[RESPONSE] [{}] [{} {}] [{}]\nBody: [{}]",
         requestId,
         request.getMethod(),
         request.getRequestURI(),
@@ -39,11 +39,17 @@ public class ResponseLoggingUtils {
   }
 
 
-  public static void logSseSubscription(String requestId, HttpServletRequest request) {
-    log.info("[Response] [{}] [{} {}] - SSE 구독 시작됨",
+  public static void logSseSubscription(String requestId, HttpServletRequest request,
+      HttpServletResponse response) {
+
+    int status = response.getStatus();
+
+    log.info("[RESPONSE] [{}] [{} {}] - SSE (Status: {})",
         requestId,
         request.getMethod(),
-        request.getRequestURI());
+        request.getRequestURI(),
+        status
+    );
   }
 
   public static void logResponseHeaders(HttpServletResponse response) {

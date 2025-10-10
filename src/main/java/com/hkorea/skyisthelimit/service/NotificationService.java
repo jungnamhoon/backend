@@ -11,12 +11,16 @@ import com.hkorea.skyisthelimit.repository.NotificationRepository;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationService {
 
   private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
@@ -29,17 +33,25 @@ public class NotificationService {
 
     SseEmitter emitter = emitterRepository.save(username, new SseEmitter(DEFAULT_TIMEOUT));
 
-    emitter.onCompletion(() -> emitterRepository.deleteByUsername(username));
-    emitter.onTimeout(() -> emitterRepository.deleteByUsername(username));
-    emitter.onError((ex) -> emitterRepository.deleteByUsername(username));
+    // 💡 1. 연결 완료 시 (onCompletion)
+    emitter.onCompletion(() -> {
+      log.info("[SSE] 🟢 Completed: Emitter for user {} finished. Deleting from repository.",
+          username);
+      emitterRepository.deleteByUsername(username);
+    });
 
-//    Member member = memberService.getMember(username);
-//    List<Notification> oldNotifications = fetchNotificationsForMember(
-//        member);
-//
-//    oldNotifications.stream()
-//        .map(NotificationMapper::toNotificationResponse)
-//        .forEach(dto -> sendToClient(username, dto));
+    emitter.onTimeout(() -> {
+      log.info("[SSE] 🟡 Timeout: Emitter for user {} timed out. Deleting from repository.",
+          username);
+      emitterRepository.deleteByUsername(username);
+    });
+
+    emitter.onError((ex) ->
+    {
+      log.info("[SSE] 🔴 Error: Emitter for user {} failed with {}. Deleting from repository.",
+          username, ex.getClass().getSimpleName(), ex);
+      emitterRepository.deleteByUsername(username);
+    });
 
     sendToClient(username, "subscribe event, username : " + username);
 
@@ -93,5 +105,17 @@ public class NotificationService {
   private List<Notification> fetchNotificationsForMember(Member member) {
     return notificationRepository.findByMemberOrderByCreatedAtDesc(
         member);
+  }
+
+  @Scheduled(fixedRate = 10000)
+  public void sendPingToClients() {
+    emitterRepository.getEmitters().forEach((username, emitter) -> {
+      sendToClient(username, "ping");
+    });
+  }
+
+  // 구독 중인 모든 사용자 목록 반환
+  public Set<String> getAllSubscribers() {
+    return emitterRepository.getAllSubscribers();  // 구독 중인 모든 사용자 이름 목록 반환
   }
 }
