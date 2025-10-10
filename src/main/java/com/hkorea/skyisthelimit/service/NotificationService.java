@@ -25,7 +25,6 @@ public class NotificationService {
   private final EmitterRepository emitterRepository;
   private final NotificationRepository notificationRepository;
 
-  @Transactional
   public SseEmitter subscribe(String username) {
 
     SseEmitter emitter = emitterRepository.save(username, new SseEmitter(DEFAULT_TIMEOUT));
@@ -33,14 +32,14 @@ public class NotificationService {
     emitter.onCompletion(() -> emitterRepository.deleteByUsername(username));
     emitter.onTimeout(() -> emitterRepository.deleteByUsername(username));
     emitter.onError((ex) -> emitterRepository.deleteByUsername(username));
-    
-    Member member = memberService.getMember(username);
-    List<Notification> oldNotifications = fetchNotificationsForMember(
-        member);
 
-    oldNotifications.stream()
-        .map(NotificationMapper::toNotificationResponse)
-        .forEach(dto -> sendToClient(username, dto));
+//    Member member = memberService.getMember(username);
+//    List<Notification> oldNotifications = fetchNotificationsForMember(
+//        member);
+//
+//    oldNotifications.stream()
+//        .map(NotificationMapper::toNotificationResponse)
+//        .forEach(dto -> sendToClient(username, dto));
 
     sendToClient(username, "subscribe event, username : " + username);
 
