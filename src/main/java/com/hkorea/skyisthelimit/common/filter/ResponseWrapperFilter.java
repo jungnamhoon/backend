@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,14 @@ public class ResponseWrapperFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
+
+    if (request instanceof HttpServletRequest) {
+      String path = ((HttpServletRequest) request).getServletPath();
+      if (path.equals("/api/notifications/stream")) {
+        chain.doFilter(request, response);
+        return;
+      }
+    }
 
     if (response instanceof HttpServletResponse) {
       CustomHttpResponseWrapper responseWrapper = new CustomHttpResponseWrapper(
