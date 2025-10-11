@@ -1,14 +1,10 @@
 package com.hkorea.skyisthelimit.entity;
 
 import com.hkorea.skyisthelimit.dto.study.request.StudyUpdateRequest;
-import com.hkorea.skyisthelimit.entity.embeddable.DailyProblem;
 import com.hkorea.skyisthelimit.entity.enums.ProblemRank;
-import com.hkorea.skyisthelimit.entity.enums.StudyProblemStatus;
 import com.hkorea.skyisthelimit.entity.enums.StudyStatus;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,9 +17,7 @@ import jakarta.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -62,28 +56,20 @@ public class Study {
   @JoinColumn(name = "creator_id", nullable = false)
   private Member creator;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "daily_problems_setter_id")
-  private Member dailyProblemsSetter;
-
   @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
-  private Set<MemberStudy> memberStudies = new HashSet<>();
+  private List<MemberStudy> memberStudies = new ArrayList<>();
 
   @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<StudyProblem> studyProblems = new ArrayList<>();
 
-  @ElementCollection
-  @CollectionTable(name = "study_daily_problems", joinColumns = @JoinColumn(name = "study_id"))
-  @Builder.Default
-  private Set<DailyProblem> dailyProblems = new HashSet<>();
-
   @Column(name = "created_at")
   private LocalDateTime createdAt;
 
-  @Column(name = "last_streak_updated_date")
-  private LocalDate lastStreakUpdatedDate;
+  private Integer problemSetterIdx;
+
+  private LocalDate lastSubmittedDate;
 
   @Transient
   public StudyStatus getStatus() {
@@ -125,39 +111,8 @@ public class Study {
     }
   }
 
-  public void updateStreak() {
-
-    LocalDate today = LocalDate.now();
-
-    // 오늘 이미 streak가 계산되었으면 return
-    if (lastStreakUpdatedDate != null && lastStreakUpdatedDate.equals(today)) {
-      return;
-    }
-    incrementStreak();
-    lastStreakUpdatedDate = LocalDate.now();
-  }
-
   public boolean isNotAdmin(String username) {
     return this.creator == null || !this.creator.getUsername().equals(username);
-  }
-
-  public boolean isNotQuestionSetter(String username) {
-    return this.dailyProblemsSetter == null || !this.dailyProblemsSetter.getUsername()
-        .equals(username);
-  }
-
-  public boolean isDailyProblemsUpToDate() {
-    LocalDate today = LocalDate.now();
-    return dailyProblems.stream()
-        .anyMatch(p -> p.getAssignedDate().equals(today));
-  }
-
-  public boolean isDailyProblemsNotUpToDate() {
-    return !isDailyProblemsUpToDate();
-  }
-
-  public void clearDailyProblems() {
-    this.dailyProblems.clear();
   }
 
   public void addMemberStudy(MemberStudy memberStudy) {
@@ -168,26 +123,8 @@ public class Study {
     this.studyProblems.add(studyProblem);
   }
 
-  public void addDailyProblem(DailyProblem dailyProblem) {
-    this.dailyProblems.add(dailyProblem);
-  }
-
   public void incrementCurrentMembers() {
     this.currentMemberCount++;
-  }
-
-  public List<StudyProblem> getSolvedStudyProblemList() {
-    return studyProblems.stream()
-        .filter(sp -> sp.getStatus() == StudyProblemStatus.SOLVED)
-        .toList();
-  }
-
-  public void incrementTotalSolvedProblemsCount(int solvedCount) {
-    this.totalSolvedProblemsCount += solvedCount;
-  }
-
-  private void incrementStreak() {
-    this.streak++;
   }
 
 }

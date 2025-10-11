@@ -1,7 +1,7 @@
 package com.hkorea.skyisthelimit.dto.study.response;
 
 import com.hkorea.skyisthelimit.dto.member.internal.MemberNotSolvingDailyProblemsDTO;
-import com.hkorea.skyisthelimit.dto.problem.response.DailyProblemCreateResponse;
+import com.hkorea.skyisthelimit.dto.studyproblem.internal.DailyProblemDTO;
 import com.hkorea.skyisthelimit.dto.studyproblem.internal.StudyProblemSolvedCountByDayDTO;
 import com.hkorea.skyisthelimit.dto.studyproblem.internal.StudyProblemSolvedDTO;
 import com.hkorea.skyisthelimit.entity.enums.ProblemRank;
@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 
@@ -53,7 +52,7 @@ public class StudyInfoResponse {
   private String dailyProblemsSetterUsername;
 
   @Schema(description = "오늘의 문제")
-  private List<DailyProblemCreateResponse> dailyProblems;
+  private List<DailyProblemDTO> dailyProblems;
 
   @Schema(description = "스터디원 모두가 푼 문제 총 개수")
   private int totalSolvedProblemsCount;
@@ -62,7 +61,7 @@ public class StudyInfoResponse {
   private int streak;
 
   @Schema(description = "아직 제출을 안한 스터디원")
-  private Set<MemberNotSolvingDailyProblemsDTO> membersNotSolvingDailyProblems;
+  private List<MemberNotSolvingDailyProblemsDTO> membersNotSolvingDailyProblems;
 
   @Schema(description = "스터디가 해결한 문제")
   private List<StudyProblemSolvedDTO> problemListSolved;

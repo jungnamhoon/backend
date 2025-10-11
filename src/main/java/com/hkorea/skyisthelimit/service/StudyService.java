@@ -4,11 +4,14 @@ import com.hkorea.skyisthelimit.common.exception.BusinessException;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
 import com.hkorea.skyisthelimit.common.utils.ImageUtils;
 import com.hkorea.skyisthelimit.common.utils.QueryDSLHelper;
+import com.hkorea.skyisthelimit.common.utils.mapper.MemberStudyMapper;
 import com.hkorea.skyisthelimit.common.utils.mapper.StudyMapper;
 import com.hkorea.skyisthelimit.common.utils.mapper.StudyProblemMapper;
 import com.hkorea.skyisthelimit.dto.criteria.PageableCriteria;
+import com.hkorea.skyisthelimit.dto.member.internal.MemberNotSolvingDailyProblemsDTO;
 import com.hkorea.skyisthelimit.dto.problem.request.DailyProblemsCreateRequest;
 import com.hkorea.skyisthelimit.dto.problem.response.DailyProblemCreateResponse;
+import com.hkorea.skyisthelimit.dto.study.inner.StudyStatsDTO;
 import com.hkorea.skyisthelimit.dto.study.request.StudyCreateRequest;
 import com.hkorea.skyisthelimit.dto.study.request.StudyUpdateRequest;
 import com.hkorea.skyisthelimit.dto.study.response.StudyCreateResponse;
@@ -16,14 +19,17 @@ import com.hkorea.skyisthelimit.dto.study.response.StudyInfoResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudySummaryResponse;
 import com.hkorea.skyisthelimit.dto.study.response.StudyUpdateResponse;
 import com.hkorea.skyisthelimit.dto.study.response.ThumbnailUpdateResponse;
+import com.hkorea.skyisthelimit.dto.studyproblem.internal.DailyProblemDTO;
+import com.hkorea.skyisthelimit.dto.studyproblem.internal.StudyProblemSolvedCountByDayDTO;
+import com.hkorea.skyisthelimit.dto.studyproblem.internal.StudyProblemSolvedDTO;
 import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.entity.MemberStudy;
 import com.hkorea.skyisthelimit.entity.Problem;
 import com.hkorea.skyisthelimit.entity.QStudy;
 import com.hkorea.skyisthelimit.entity.Study;
 import com.hkorea.skyisthelimit.entity.StudyProblem;
-import com.hkorea.skyisthelimit.entity.embeddable.DailyProblem;
 import com.hkorea.skyisthelimit.entity.enums.MemberStudyStatus;
+import com.hkorea.skyisthelimit.repository.StudyProblemRepository;
 import com.hkorea.skyisthelimit.repository.StudyRepository;
 import com.hkorea.skyisthelimit.service.enums.ImageType;
 import com.querydsl.core.types.OrderSpecifier;
@@ -38,16 +44,18 @@ import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,13 +66,33 @@ import org.springframework.web.multipart.MultipartFile;
 public class StudyService {
 
   private final StudyRepository studyRepository;
+  private final StudyProblemRepository studyProblemRepository;
+
   private final MemberService memberService;
   private final QueryDSLHelper queryDSLService;
   private final ProblemService problemService;
   private final MinioService minioService;
 
-  @Value("${minio.endpoint}")
-  private String minioEndpoint;
+  @Scheduled(cron = "0 0 0 * * ?")
+  @Transactional
+  public void rotateProblemSetterIdx() {
+
+    List<Study> studies = studyRepository.findAll();
+
+    for (Study study : studies) {
+      List<MemberStudy> memberStudies = study.getMemberStudies();
+      int size = memberStudies.size();
+      if (size == 0) {
+        continue;
+      }
+
+      Integer currentIdx = study.getProblemSetterIdx();
+      Integer nextIdx = (currentIdx + 1) % size;
+      study.setProblemSetterIdx(nextIdx);
+      studyRepository.save(study);
+    }
+
+  }
 
   @Transactional
   public Page<StudySummaryResponse> getStudyPage(PageableCriteria<QStudy> criteria,
@@ -96,26 +124,9 @@ public class StudyService {
 
     Study study = getStudy(studyId);
 
-    if (study.isDailyProblemsNotUpToDate()) {
-      study.clearDailyProblems();
-    }
+    StudyStatsDTO studyStatsDTO = buildStudyStatsDTO(study);
 
-    List<StudyProblem> studyProblemListSolvedByAll = getStudyProblemListSolvedByAll(studyId);
-    studyProblemListSolvedByAll.forEach(StudyProblem::markToSolved);
-
-    int newSolvedCount = studyProblemListSolvedByAll.size();
-    study.incrementTotalSolvedProblemsCount(newSolvedCount);
-
-    Set<MemberStudy> memberStudiesNotSolvingDailyProblems = getMemberStudiesNotSolvingDailyProblems(
-        studyId);
-
-    if (allSolvedDailyProblems(memberStudiesNotSolvingDailyProblems)) {
-      study.updateStreak();
-    }
-
-    return StudyMapper.toStudyInfoResponse(
-        study,
-        memberStudiesNotSolvingDailyProblems);
+    return StudyMapper.toStudyInfoResponse(study, studyStatsDTO);
   }
 
   @Transactional
@@ -134,7 +145,6 @@ public class StudyService {
   @Transactional
   public ThumbnailUpdateResponse updateThumbnail(Integer studyId, String username,
       MultipartFile studyProfileImage)
-
       throws ErrorResponseException, InsufficientDataException, InternalException,
       InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException,
       ServerException, XmlParserException {
@@ -185,7 +195,27 @@ public class StudyService {
     return StudyMapper.toStudyCreateResponse(study);
   }
 
-  public MemberStudyStatus getMemberStudyStatus(Study study, String username) {
+  @Transactional
+  public Set<DailyProblemCreateResponse> createDailyProblems(Integer studyId, String username,
+      DailyProblemsCreateRequest requestDTO) {
+
+    Study study = getStudy(studyId);
+
+    validateProblemSetter(username, study);
+    validateProblemCountMatch(study, requestDTO);
+    validateAlreadyDailyProblemsExist(study);
+
+    study.setLastSubmittedDate(LocalDate.now());
+
+    return registerTodayProblems(study, requestDTO);
+  }
+
+  public Study getStudy(Integer studyId) {
+    return studyRepository.findById(studyId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.STUDY_NOT_FOUND));
+  }
+
+  private MemberStudyStatus getMemberStudyStatus(Study study, String username) {
     return study.getMemberStudies().stream()
         .filter(ms -> ms.getMember().getUsername().equals(username))
         .map(MemberStudy::getStatus)
@@ -215,26 +245,6 @@ public class StudyService {
     );
   }
 
-  @Transactional
-  public Set<DailyProblemCreateResponse> createDailyProblems(Integer studyId, String username,
-      DailyProblemsCreateRequest requestDTO) {
-
-    Study study = getStudy(studyId);
-
-    validateQuestionSetter(username, study);
-    validateDailyProblemsUpToDate(study);
-    validateProblemCountMatch(study, requestDTO);
-
-    study.clearDailyProblems();
-
-    return registerTodayProblems(study, requestDTO);
-  }
-
-  public Study getStudy(Integer studyId) {
-    return studyRepository.findById(studyId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.STUDY_NOT_FOUND));
-  }
-
   private Set<DailyProblemCreateResponse> registerTodayProblems(Study study,
       DailyProblemsCreateRequest requestDTO) {
 
@@ -244,13 +254,12 @@ public class StudyService {
 
           Problem problem = problemService.getOrRegisterProblem(problemId);
 
+          validateProblemLevel(study, problem);
+
           StudyProblem studyProblem = StudyProblem.create(study, problem);
           study.addStudyProblem(studyProblem);
 
-          DailyProblem dailyProblem = DailyProblem.create(problem);
-          study.addDailyProblem(DailyProblem.create(problem));
-
-          return StudyProblemMapper.toDailyProblemCreateResponse(dailyProblem);
+          return StudyProblemMapper.toDailyProblemCreateResponse(studyProblem);
         })
         .collect(Collectors.toSet());
   }
@@ -271,15 +280,15 @@ public class StudyService {
     }
   }
 
-  private void validateQuestionSetter(String username, Study study) {
-    if (study.isNotQuestionSetter(username)) {
-      throw new BusinessException(ErrorCode.NOT_QUESTION_SETTER);
-    }
-  }
+  private void validateProblemSetter(String username, Study study) {
 
-  private void validateDailyProblemsUpToDate(Study study) {
-    if (study.isDailyProblemsUpToDate()) {
-      throw new BusinessException(ErrorCode.DUPLICATE_TODAY_PROBLEM);
+    Integer problemSetterIdx = study.getProblemSetterIdx();
+
+    List<MemberStudy> memberStudies = study.getMemberStudies();
+    MemberStudy problemSetter = memberStudies.get(problemSetterIdx);
+
+    if (!problemSetter.getMember().getUsername().equals(username)) {
+      throw new BusinessException(ErrorCode.NOT_QUESTION_SETTER);
     }
   }
 
@@ -292,19 +301,109 @@ public class StudyService {
     }
   }
 
-  private List<StudyProblem> getStudyProblemListSolvedByAll(Integer studyId) {
-    return studyRepository.findStudyProblemListSolvedByAll(
-        studyId);
+  private void validateAlreadyDailyProblemsExist(Study study) {
+    if (study.getLastSubmittedDate() != null && study.getLastSubmittedDate()
+        .isEqual(LocalDate.now())) {
+      throw new BusinessException(ErrorCode.STUDY_PROBLEMS_ALREADY_CREATED);
+    }
   }
 
-  private Set<MemberStudy> getMemberStudiesNotSolvingDailyProblems(Integer studyId) {
+  private void validateProblemLevel(Study study, Problem problem) {
+    int problemLevel = problem.getLevel();
 
-    return studyRepository.findMemberStudiesNotSolvingDailyProblems(
-        studyId);
+    if (problemLevel < study.getMinLevel() || problemLevel > study.getMaxLevel()) {
+      throw new BusinessException(ErrorCode.PROBLEM_LEVEL_OUT_OF_RANGE);
+    }
   }
 
-  private boolean allSolvedDailyProblems(Set<MemberStudy> memberStudiesNotSolvingDailyProblems) {
-    return memberStudiesNotSolvingDailyProblems.isEmpty();
+
+  private StudyStatsDTO buildStudyStatsDTO(Study study) {
+
+    String dailyProblemSetterUsername = getProblemSetterUsername(study);
+
+    List<StudyProblem> dailyProblemList = getDailyProblemList(study);
+    List<DailyProblemDTO> dailyProblemDTOList = StudyProblemMapper.toDailyProblemDTOList(
+        dailyProblemList);
+
+    List<MemberStudy> membersNotSolvingDailyProblemsList = getMembersNotSolvingDailyProblemsList(
+        study);
+    List<MemberNotSolvingDailyProblemsDTO> memberNotSolvingDailyProblemsDTOList = MemberStudyMapper.toMemberNotSolvingDailyProblemsDTOList(
+        membersNotSolvingDailyProblemsList);
+
+    List<StudyProblem> studyProblemListSolvedByAll = getStudyProblemListSolvedByAll(
+        study);
+    List<StudyProblemSolvedDTO> studyProblemSolvedDTOList = StudyProblemMapper.toStudyProblemSolvedDTOList(
+        studyProblemListSolvedByAll);
+
+    Map<LocalDate, Integer> solvedCountMap = getSolvedCountByDate(studyProblemListSolvedByAll);
+    List<StudyProblemSolvedCountByDayDTO> studyProblemSolvedCountByDayDTOList = StudyProblemMapper.toStudyProblemSolvedCountByDayDTOList(
+        solvedCountMap);
+
+    int totalSolvedProblemCount = calculateTotalSolvedProblemCount(studyProblemListSolvedByAll);
+
+    int streak = calculateStreak(solvedCountMap, study.getDailyProblemCount());
+
+    return StudyStatsDTO.builder()
+        .dailyProblemSetterUsername(dailyProblemSetterUsername)
+        .dailyProblems(dailyProblemDTOList)
+        .membersNotSolvingDailyProblems(memberNotSolvingDailyProblemsDTOList)
+        .problemListSolved(studyProblemSolvedDTOList)
+        .solvedCountList(studyProblemSolvedCountByDayDTOList)
+        .totalSolvedProblemCount(totalSolvedProblemCount)
+        .streak(streak)
+        .build();
+  }
+
+  private String getProblemSetterUsername(Study study) {
+    Integer problemSetterIdx = study.getProblemSetterIdx();
+    return study.getMemberStudies().get(problemSetterIdx).getMember().getUsername();
+  }
+
+  private List<StudyProblem> getDailyProblemList(Study study) {
+    return studyProblemRepository.findByStudyAndAssignedDate(study, LocalDate.now());
+  }
+
+  private List<MemberStudy> getMembersNotSolvingDailyProblemsList(Study study) {
+    return studyRepository.findMemberStudiesNotSolvingDailyProblems(study.getId());
+  }
+
+  private List<StudyProblem> getStudyProblemListSolvedByAll(Study study) {
+    return studyRepository.findStudyProblemListSolvedByAll(study.getId());
+  }
+
+  private Map<LocalDate, Integer> getSolvedCountByDate(
+      List<StudyProblem> studyProblemListSolvedByAll) {
+    return studyProblemListSolvedByAll.stream()
+        .collect(
+            Collectors.groupingBy(StudyProblem::getAssignedDate, Collectors.summingInt(e -> 1)));
+  }
+
+  private int calculateTotalSolvedProblemCount(List<StudyProblem> studyProblemListSolvedByAll) {
+    return studyProblemListSolvedByAll.size();
+  }
+
+  private int calculateStreak(Map<LocalDate, Integer> dateToSolvedCountMap, int dailyProblemCount) {
+
+    LocalDate today = LocalDate.now();
+    LocalDate day = today.minusDays(1);
+    int streak = 0;
+
+    if (dateToSolvedCountMap.getOrDefault(today, 0) >= dailyProblemCount) {
+      streak++;
+    }
+
+    while (true) {
+      long count = dateToSolvedCountMap.getOrDefault(day, 0);
+
+      if (count < dailyProblemCount) {
+        break;
+      }
+
+      streak++;
+      day = day.minusDays(1);
+    }
+
+    return streak;
   }
 
 }

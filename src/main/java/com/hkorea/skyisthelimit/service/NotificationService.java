@@ -29,6 +29,13 @@ public class NotificationService {
   private final EmitterRepository emitterRepository;
   private final NotificationRepository notificationRepository;
 
+  @Scheduled(fixedRate = 10000)
+  public void sendPingToClients() {
+    emitterRepository.getEmitters().forEach((username, emitter) -> {
+      sendToClient(username, "ping");
+    });
+  }
+
   public SseEmitter subscribe(String username) {
 
     SseEmitter emitter = emitterRepository.save(username, new SseEmitter(DEFAULT_TIMEOUT));
@@ -90,6 +97,10 @@ public class NotificationService {
     );
   }
 
+  public Set<String> getAllSubscribers() {
+    return emitterRepository.getAllSubscribers();
+  }
+
   private void sendToClient(String username, Object data) {
     SseEmitter emitter = emitterRepository.getEmitter(username);
     if (emitter != null) {
@@ -105,17 +116,5 @@ public class NotificationService {
   private List<Notification> fetchNotificationsForMember(Member member) {
     return notificationRepository.findByMemberOrderByCreatedAtDesc(
         member);
-  }
-
-  @Scheduled(fixedRate = 10000)
-  public void sendPingToClients() {
-    emitterRepository.getEmitters().forEach((username, emitter) -> {
-      sendToClient(username, "ping");
-    });
-  }
-
-  // 구독 중인 모든 사용자 목록 반환
-  public Set<String> getAllSubscribers() {
-    return emitterRepository.getAllSubscribers();  // 구독 중인 모든 사용자 이름 목록 반환
   }
 }

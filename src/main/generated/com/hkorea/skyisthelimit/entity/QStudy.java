@@ -30,21 +30,13 @@ public class QStudy extends EntityPathBase<Study> {
 
     public final NumberPath<Integer> dailyProblemCount = createNumber("dailyProblemCount", Integer.class);
 
-    public final SetPath<com.hkorea.skyisthelimit.entity.embeddable.DailyProblem, com.hkorea.skyisthelimit.entity.embeddable.QDailyProblem> dailyProblems = this.<com.hkorea.skyisthelimit.entity.embeddable.DailyProblem, com.hkorea.skyisthelimit.entity.embeddable.QDailyProblem>createSet("dailyProblems", com.hkorea.skyisthelimit.entity.embeddable.DailyProblem.class, com.hkorea.skyisthelimit.entity.embeddable.QDailyProblem.class, PathInits.DIRECT2);
-
-    public final BooleanPath dailyProblemsNotUpToDate = createBoolean("dailyProblemsNotUpToDate");
-
-    public final QMember dailyProblemsSetter;
-
-    public final BooleanPath dailyProblemsUpToDate = createBoolean("dailyProblemsUpToDate");
-
     public final StringPath description = createString("description");
 
     public final DatePath<java.time.LocalDate> endDate = createDate("endDate", java.time.LocalDate.class);
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
-    public final DatePath<java.time.LocalDate> lastStreakUpdatedDate = createDate("lastStreakUpdatedDate", java.time.LocalDate.class);
+    public final DatePath<java.time.LocalDate> lastSubmittedDate = createDate("lastSubmittedDate", java.time.LocalDate.class);
 
     public final NumberPath<Integer> maxLevel = createNumber("maxLevel", Integer.class);
 
@@ -52,7 +44,7 @@ public class QStudy extends EntityPathBase<Study> {
 
     public final EnumPath<com.hkorea.skyisthelimit.entity.enums.ProblemRank> maxRank = createEnum("maxRank", com.hkorea.skyisthelimit.entity.enums.ProblemRank.class);
 
-    public final SetPath<MemberStudy, QMemberStudy> memberStudies = this.<MemberStudy, QMemberStudy>createSet("memberStudies", MemberStudy.class, QMemberStudy.class, PathInits.DIRECT2);
+    public final ListPath<MemberStudy, QMemberStudy> memberStudies = this.<MemberStudy, QMemberStudy>createList("memberStudies", MemberStudy.class, QMemberStudy.class, PathInits.DIRECT2);
 
     public final NumberPath<Integer> minLevel = createNumber("minLevel", Integer.class);
 
@@ -60,7 +52,7 @@ public class QStudy extends EntityPathBase<Study> {
 
     public final StringPath name = createString("name");
 
-    public final ListPath<StudyProblem, QStudyProblem> solvedStudyProblemList = this.<StudyProblem, QStudyProblem>createList("solvedStudyProblemList", StudyProblem.class, QStudyProblem.class, PathInits.DIRECT2);
+    public final NumberPath<Integer> problemSetterIdx = createNumber("problemSetterIdx", Integer.class);
 
     public final DatePath<java.time.LocalDate> startDate = createDate("startDate", java.time.LocalDate.class);
 
@@ -93,7 +85,6 @@ public class QStudy extends EntityPathBase<Study> {
     public QStudy(Class<? extends Study> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.creator = inits.isInitialized("creator") ? new QMember(forProperty("creator")) : null;
-        this.dailyProblemsSetter = inits.isInitialized("dailyProblemsSetter") ? new QMember(forProperty("dailyProblemsSetter")) : null;
     }
 
 }

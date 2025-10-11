@@ -65,7 +65,8 @@ public class StudyCreateRequest {
         .minRank(ProblemRank.fromLevel(this.minLevel))
         .maxRank(ProblemRank.fromLevel(this.maxLevel))
         .createdAt(LocalDateTime.now())
-        .dailyProblemsSetter(host)
+//        .dailyProblemsSetter(host)
+        .problemSetterIdx(0)
         .creator(host)
         .build();
 

@@ -5,6 +5,7 @@ import com.hkorea.skyisthelimit.dto.memberstudy.response.MemberStudyParticipatio
 import com.hkorea.skyisthelimit.dto.memberstudy.response.MemberStudyResponse;
 import com.hkorea.skyisthelimit.entity.MemberStudy;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,19 @@ public class MemberStudyMapper {
         .map(MemberStudyMapper::toMemberNotSolvedDailyProblemsDTO)
         .collect(Collectors.toSet());
   }
+
+  public static List<MemberNotSolvingDailyProblemsDTO> toMemberNotSolvingDailyProblemsDTOList(
+      List<MemberStudy> memberStudyList) {
+
+    if (memberStudyList == null || memberStudyList.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    return memberStudyList.stream()
+        .map(MemberStudyMapper::toMemberNotSolvedDailyProblemsDTO)
+        .collect(Collectors.toList());
+  }
+
 
   public static MemberNotSolvingDailyProblemsDTO toMemberNotSolvedDailyProblemsDTO(
       MemberStudy memberStudy) {

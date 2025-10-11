@@ -37,7 +37,7 @@ public enum ErrorCode {
   STUDY_NOT_FOUND(HttpStatus.BAD_REQUEST, "S003", "스터디를 찾을 수 없습니다"),
   STUDY_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "S004", "스터디를 수정할 권한이 없습니다"),
   STUDY_NOT_ACTIVE(HttpStatus.BAD_REQUEST, "S005", "스터디가 진행중이 아닙니다"),
-
+  STUDY_PROBLEMS_ALREADY_CREATED(HttpStatus.BAD_REQUEST, "S006", "이미 문제가 출제되었습니다"),
 
   STUDY_REQUEST_NOT_FOUND(HttpStatus.BAD_REQUEST, "MS001", "스터디 참가 요청을 찾을 수 없습니다"),
   STUDY_ACCEPT_FORBIDDEN(HttpStatus.BAD_REQUEST, "MS002", "방장만 요청을 수락/거절할 수 있습니다"),
@@ -47,7 +47,8 @@ public enum ErrorCode {
   DUPLICATE_TODAY_PROBLEM(HttpStatus.BAD_REQUEST, "MS005", "오늘의 문제는 이미 출제되었습니다"),
 
   STUDY_PROBLEM_COUNT_MISMATCH(HttpStatus.BAD_REQUEST, "SP001",
-      "요청된 문제 개수가 스터디에서 설정된 오늘의 문제 개수와 다릅니다. 올바른 개수로 다시 제출해주세요");
+      "요청된 문제 개수가 스터디에서 설정된 오늘의 문제 개수와 다릅니다. 올바른 개수로 다시 제출해주세요"),
+  PROBLEM_LEVEL_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "SP002", "출제 문제 난이도가 맞지 않습니다.");
 
 
   private final HttpStatus httpStatus;
