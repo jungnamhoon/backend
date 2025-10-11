@@ -44,3 +44,6 @@ out/
 /src/main/resources/application-docker.yml
 
 /.env
+
+# Ignore generated files for QueryDSL
+/src/main/generated/
