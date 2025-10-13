@@ -5,7 +5,6 @@ import com.hkorea.skyisthelimit.entity.MemberStudy;
 import com.hkorea.skyisthelimit.entity.Study;
 import com.hkorea.skyisthelimit.entity.enums.MemberStudyStatus;
 import com.hkorea.skyisthelimit.entity.enums.ProblemRank;
-import com.hkorea.skyisthelimit.entity.enums.StudyStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -59,13 +58,11 @@ public class StudyCreateRequest {
         .maxMemberCount(this.maxMemberCount)
         .dailyProblemCount(this.dailyProblemCount)
         .currentMemberCount(1)
-        .status(StudyStatus.BEFORE_START)
         .minLevel(this.minLevel)
         .maxLevel(this.maxLevel)
         .minRank(ProblemRank.fromLevel(this.minLevel))
         .maxRank(ProblemRank.fromLevel(this.maxLevel))
         .createdAt(LocalDateTime.now())
-//        .dailyProblemsSetter(host)
         .problemSetterIdx(0)
         .creator(host)
         .build();

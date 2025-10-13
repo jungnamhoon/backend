@@ -48,9 +48,7 @@ public class Study {
   private Integer maxLevel;
   private ProblemRank minRank;
   private ProblemRank maxRank;
-  private StudyStatus status;
   private int totalSolvedProblemsCount;
-  private int streak;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "creator_id", nullable = false)

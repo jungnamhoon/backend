@@ -1,10 +1,7 @@
 package com.hkorea.skyisthelimit.entity;
 
-import com.hkorea.skyisthelimit.entity.enums.StudyProblemStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -41,25 +38,12 @@ public class StudyProblem {
   @Column(name = "assigned_date")
   private LocalDate assignedDate;
 
-  @Column(name = "solved_date")
-  private LocalDate solvedDate;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "status", nullable = false)
-  private StudyProblemStatus status;
-
-
   public static StudyProblem create(Study study, Problem problem) {
     return StudyProblem.builder()
         .study(study)
         .problem(problem)
         .assignedDate(LocalDate.now())
-        .status(StudyProblemStatus.UNSOLVED)
         .build();
   }
 
-  public void markToSolved() {
-    this.status = StudyProblemStatus.SOLVED;
-    this.solvedDate = LocalDate.now();
-  }
 }
