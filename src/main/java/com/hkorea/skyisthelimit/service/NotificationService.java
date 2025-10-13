@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -29,12 +28,12 @@ public class NotificationService {
   private final EmitterRepository emitterRepository;
   private final NotificationRepository notificationRepository;
 
-  @Scheduled(fixedRate = 10000)
-  public void sendPingToClients() {
-    emitterRepository.getEmitters().forEach((username, emitter) -> {
-      sendToClient(username, "ping");
-    });
-  }
+//  @Scheduled(fixedRate = 10000)
+//  public void sendPingToClients() {
+//    emitterRepository.getEmitters().forEach((username, emitter) -> {
+//      sendToClient(username, "ping");
+//    });
+//  }
 
   public SseEmitter subscribe(String username) {
 
