@@ -48,7 +48,7 @@ public class MemberService {
   @Transactional
   public MemberInfoResponse getMemberInfo(String username) {
 
-    Member member = getMember(username);
+    Member member = getMemberWithProblems(username);
 
     MemberStatsDTO statsDTO = buildMemberStatsDTO(member);
 
@@ -100,18 +100,23 @@ public class MemberService {
         .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
   }
 
+  public Member getMemberWithProblems(String username) {
+    return memberRepository.findByUsernameWithProblems(username)
+        .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+  }
+
   public Member getMemberByOauth2Username(String oauth2Username) {
     return memberRepository.findByOauth2Username(oauth2Username)
         .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
   }
 
   private MemberStatsDTO buildMemberStatsDTO(Member member) {
-    // 랭킹
+    // 랭킹 - 문제 없음
     Integer ranking = calculateRanking(member);
 
     // 푼 문제 리스트
     List<MemberProblemSolvedDTO> memberProblemSolvedDTOList = calculateSolvedProblemList(
-        member.getMemberProblems());
+        member.getMemberProblems()); // N+1 문제 발생
 
     Set<MemberProblem> memberProblems = member.getMemberProblems();
 

@@ -322,18 +322,20 @@ public class StudyService {
     String dailyProblemSetterUsername = getProblemSetterUsername(study);
 
     List<StudyProblem> dailyProblemList = getDailyProblemList(study);
+
     List<DailyProblemDTO> dailyProblemDTOList = StudyProblemMapper.toDailyProblemDTOList(
         dailyProblemList);
 
     List<MemberStudy> membersNotSolvingDailyProblemsList = getMembersNotSolvingDailyProblemsList(
         study);
+
     List<MemberNotSolvingDailyProblemsDTO> memberNotSolvingDailyProblemsDTOList = MemberStudyMapper.toMemberNotSolvingDailyProblemsDTOList(
         membersNotSolvingDailyProblemsList);
 
-    List<StudyProblem> studyProblemListSolvedByAll = getStudyProblemListSolvedByAll(
-        study);
+    List<StudyProblem> studyProblemListSolvedByAll = getStudyProblemListSolvedByAll(study);
+
     List<StudyProblemSolvedDTO> studyProblemSolvedDTOList = StudyProblemMapper.toStudyProblemSolvedDTOList(
-        studyProblemListSolvedByAll);
+        studyProblemListSolvedByAll); // - N+1 문제 발생
 
     Map<LocalDate, Integer> solvedCountMap = getSolvedCountByDate(studyProblemListSolvedByAll);
     List<StudyProblemSolvedCountByDayDTO> studyProblemSolvedCountByDayDTOList = StudyProblemMapper.toStudyProblemSolvedCountByDayDTOList(
@@ -352,6 +354,7 @@ public class StudyService {
         .totalSolvedProblemCount(totalSolvedProblemCount)
         .streak(streak)
         .build();
+
   }
 
   private String getProblemSetterUsername(Study study) {

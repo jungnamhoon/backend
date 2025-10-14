@@ -25,4 +25,10 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
       "WHERE m.score > :score")
   Integer findRanking(@Param("score") int score);
 
+  @Query("SELECT DISTINCT m FROM Member m " +
+      "LEFT JOIN FETCH m.memberProblems mp " +
+      "LEFT JOIN FETCH mp.problem " +
+      "WHERE m.username = :username")
+  Optional<Member> findByUsernameWithProblems(@Param("username") String username);
+
 }

@@ -12,21 +12,27 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StudyRepository extends JpaRepository<Study, Integer> {
 
-  @Query(value = """
-      SELECT sp.*
-      FROM study_problem sp
-      JOIN study s ON sp.study_id = s.id
-      JOIN member_study ms ON s.id = ms.study_id
-      LEFT JOIN member_problem mp
-         ON mp.member_id = ms.member_id
-        AND mp.problem_id = sp.problem_id
-        AND mp.status IN (0,1,2)
-      WHERE s.id = :studyId
-      GROUP BY sp.id
-      HAVING COUNT(DISTINCT ms.member_id) = COUNT(DISTINCT mp.member_id)
-      """, nativeQuery = true)
+  @Query("""
+      SELECT DISTINCT sp
+      FROM StudyProblem sp
+      JOIN FETCH sp.problem p
+      WHERE sp.study.id = :studyId
+        AND NOT EXISTS (
+          SELECT 1
+          FROM MemberStudy ms
+          WHERE ms.study = sp.study
+            AND NOT EXISTS (
+              SELECT 1
+              FROM MemberProblem mp
+              WHERE mp.member = ms.member
+                AND mp.problem = sp.problem
+                AND mp.status IN (com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus.SOLVED,
+                                  com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus.MULTI_TRY)
+            )
+        )
+      """)
   List<StudyProblem> findStudyProblemListSolvedByAll(@Param("studyId") Integer studyId);
-  
+
   @Query(value = """
           SELECT ms.*
           FROM member_study ms
