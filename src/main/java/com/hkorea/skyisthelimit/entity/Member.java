@@ -64,7 +64,6 @@ public class Member {
     addMemberProblem(memberProblem);
     incrementScore(memberProblem.getProblem());
     incrementTotalSolvedProblems();
-//    updateStreak();
     updateLastSolvedDate();
   }
 
@@ -75,19 +74,6 @@ public class Member {
   public void recordNotesWritten() {
     incrementTotalReviewNotes();
   }
-
-//  private void updateStreak() {
-//
-//    if (lastSolvedDate == null) {
-//      streak = 1;
-//    } else if (lastSolvedDate.equals(LocalDate.now())) {
-//      // 같은 날에 여러번 푸는 경우 streak 변화 없음
-//    } else if (lastSolvedDate.plusDays(1).equals(LocalDate.now())) {
-//      streak += 1;
-//    } else {
-//      streak = 1;
-//    }
-//  }
 
   private void updateLastSolvedDate() {
     this.lastSolvedDate = LocalDate.now();
