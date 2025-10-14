@@ -47,3 +47,5 @@ out/
 
 # Ignore generated files for QueryDSL
 /src/main/generated/
+
+glowroot/
