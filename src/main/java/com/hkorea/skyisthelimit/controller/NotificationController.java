@@ -13,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -32,6 +34,16 @@ public class NotificationController implements NotificationControllerDocs {
         customOAuth2User.getUsername());
     return ApiResponse.of(SuccessCode.OK, responseDTOS);
   }
+
+  @PatchMapping("/notifications/me/{messageId}")
+  public ResponseEntity<ApiResponse<NotificationResponse>> updateNotification(
+      @PathVariable Long messageId) {
+
+    NotificationResponse responseDTO = notificationService.markAsRead(messageId);
+
+    return ApiResponse.of(SuccessCode.OK, responseDTO);
+  }
+
 
   @GetMapping(value = "/notifications/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   public SseEmitter subscribe(@AuthenticationPrincipal CustomOAuth2User customOAuth2User) {

@@ -1,5 +1,7 @@
 package com.hkorea.skyisthelimit.service;
 
+import com.hkorea.skyisthelimit.common.exception.BusinessException;
+import com.hkorea.skyisthelimit.common.response.ErrorCode;
 import com.hkorea.skyisthelimit.common.utils.mapper.NotificationMapper;
 import com.hkorea.skyisthelimit.dto.notification.internal.MessageContent;
 import com.hkorea.skyisthelimit.dto.notification.response.NotificationResponse;
@@ -82,6 +84,18 @@ public class NotificationService {
     Notification notification = Notification.create(receiver, message);
     notificationRepository.save(notification);
     sendToClient(receiverUsername, NotificationMapper.toNotificationResponse(notification));
+  }
+
+  @Transactional
+  public NotificationResponse markAsRead(Long messageId) {
+
+    Notification notification = notificationRepository.findById(messageId).orElseThrow(() ->
+        new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND));
+
+    if (!notification.isRead()) {
+      notification.setIsRead(true);
+    }
+    return NotificationMapper.toNotificationResponse(notification);
   }
 
   public MessageContent createMessage(Member fromMember, Integer studyId, MessageType messageType) {
