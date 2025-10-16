@@ -103,7 +103,9 @@ public class NotificationService {
     List<NotificationResponse> notificationResponseList = NotificationMapper.toNotificationResponseList(
         notifications);
 
-    return new PageImpl<>(notificationResponseList, pageable, notifications.size());
+    long total = queryDSLHelper.fetchTotalCount(notification, predicate);
+
+    return new PageImpl<>(notificationResponseList, pageable, total);
   }
 
   @Transactional
