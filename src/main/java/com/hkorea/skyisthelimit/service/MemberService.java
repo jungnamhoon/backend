@@ -77,7 +77,9 @@ public class MemberService {
     }
 
     // 1. 기존 이미지 삭제
-    minioService.deleteOldImage(member.getProfileImageUrl());
+    if (member.getProfileImageUrl() != null) {
+      minioService.deleteOldImage(member.getProfileImageUrl());
+    }
 
     // 2. 이미지 검증
     ImageUtils.validateImage(profileImage);
