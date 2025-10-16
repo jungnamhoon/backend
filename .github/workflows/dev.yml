@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - dev-server-rollback   # 임시 롤백 브랜치 추가
 
 jobs:
   build-and-deploy:
