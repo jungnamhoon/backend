@@ -1,21 +1,31 @@
 package com.hkorea.skyisthelimit.service;
 
+import static com.hkorea.skyisthelimit.repository.predicate.NotificationPredicates.usernameEq;
+
 import com.hkorea.skyisthelimit.common.exception.BusinessException;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
+import com.hkorea.skyisthelimit.common.utils.QueryDSLHelper;
 import com.hkorea.skyisthelimit.common.utils.mapper.NotificationMapper;
+import com.hkorea.skyisthelimit.dto.criteria.PageableCriteria;
 import com.hkorea.skyisthelimit.dto.notification.internal.MessageContent;
 import com.hkorea.skyisthelimit.dto.notification.response.NotificationResponse;
 import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.entity.Notification;
+import com.hkorea.skyisthelimit.entity.QNotification;
 import com.hkorea.skyisthelimit.entity.enums.MessageType;
 import com.hkorea.skyisthelimit.repository.EmitterRepository;
 import com.hkorea.skyisthelimit.repository.NotificationRepository;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -30,6 +40,7 @@ public class NotificationService {
   private final MemberService memberService;
   private final EmitterRepository emitterRepository;
   private final NotificationRepository notificationRepository;
+  private final QueryDSLHelper queryDSLHelper;
 
   @Scheduled(fixedRate = 10000)
   public void sendPingToClients() {
@@ -75,6 +86,24 @@ public class NotificationService {
         member);
 
     return NotificationMapper.toNotificationResponseList(oldNotifications);
+  }
+
+  public Page<NotificationResponse> getNotificationPage(PageableCriteria<QNotification> criteria,
+      String username) {
+
+    QNotification notification = QNotification.notification;
+
+    BooleanExpression predicate = criteria.toPredicate().and(usernameEq(username));
+    OrderSpecifier<?> orderSpecifier = criteria.toOrderSpecifier(notification);
+    Pageable pageable = criteria.toPageable();
+
+    List<Notification> notifications = queryDSLHelper.fetchEntities(notification, predicate,
+        orderSpecifier, pageable);
+
+    List<NotificationResponse> notificationResponseList = NotificationMapper.toNotificationResponseList(
+        notifications);
+
+    return new PageImpl<>(notificationResponseList, pageable, notifications.size());
   }
 
   @Transactional
@@ -131,4 +160,5 @@ public class NotificationService {
     return notificationRepository.findByMemberOrderByCreatedAtDesc(
         member);
   }
+
 }
