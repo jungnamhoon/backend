@@ -58,6 +58,7 @@ public class StudyProblemMapper {
     return DailyProblemDTO.builder()
         .problemId(studyProblem.getProblem().getBaekjoonId())
         .title(studyProblem.getProblem().getTitle())
+        .problemUrl(studyProblem.getProblem().getUrl())
         .assignedDate(studyProblem.getAssignedDate())
         .build();
   }

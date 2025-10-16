@@ -318,8 +318,8 @@ public class StudyService {
 
 
   private StudyStatsDTO buildStudyStatsDTO(Study study) {
-
-    String dailyProblemSetterUsername = getProblemSetterUsername(study);
+    
+    Member dailyProblemSetter = getProblemSetter(study);
 
     List<StudyProblem> dailyProblemList = getDailyProblemList(study);
     List<DailyProblemDTO> dailyProblemDTOList = StudyProblemMapper.toDailyProblemDTOList(
@@ -344,7 +344,8 @@ public class StudyService {
     int streak = calculateStreak(solvedCountMap, study.getDailyProblemCount());
 
     return StudyStatsDTO.builder()
-        .dailyProblemSetterUsername(dailyProblemSetterUsername)
+        .dailyProblemSetterUsername(dailyProblemSetter.getUsername())
+        .dailyProblemSetterProfileUrl(dailyProblemSetter.getProfileImageUrl())
         .dailyProblems(dailyProblemDTOList)
         .membersNotSolvingDailyProblems(memberNotSolvingDailyProblemsDTOList)
         .problemListSolved(studyProblemSolvedDTOList)
@@ -357,6 +358,11 @@ public class StudyService {
   private String getProblemSetterUsername(Study study) {
     Integer problemSetterIdx = study.getProblemSetterIdx();
     return study.getMemberStudies().get(problemSetterIdx).getMember().getUsername();
+  }
+
+  private Member getProblemSetter(Study study) {
+    Integer problemSetterIdx = study.getProblemSetterIdx();
+    return study.getMemberStudies().get(problemSetterIdx).getMember();
   }
 
   private List<StudyProblem> getDailyProblemList(Study study) {
