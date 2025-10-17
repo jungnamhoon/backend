@@ -3,6 +3,7 @@ package com.hkorea.skyisthelimit.controller.docs;
 import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.dto.criteria.NotificationCriteria;
+import com.hkorea.skyisthelimit.dto.notification.request.NotificationMarkAsReadRequest;
 import com.hkorea.skyisthelimit.dto.notification.response.NotificationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "Notification", description = "알림 관련 API - JWT 토큰 필요")
@@ -84,4 +86,23 @@ public interface NotificationControllerDocs {
   ResponseEntity<ApiResponse<NotificationResponse>> updateNotification(
       @Parameter(description = "읽음 처리할 알림 ID", required = true)
       @PathVariable Long messageId);
+
+  @Operation(
+      summary = "알림 여러개 읽음 처리",
+      description = "지정한 여러 알림을 읽음 상태로 변경합니다. 요청 바디로 읽음 처리할 알림 ID 목록을 전달합니다."
+  )
+  @ApiResponses(value = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "성공적으로 읽음 처리됨",
+          content = @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = Void.class)
+          )
+      )
+  })
+  ResponseEntity<ApiResponse<Void>> updateNotifications(
+      @Parameter(description = "읽음 처리할 알림 ID 목록", required = true)
+      @RequestBody NotificationMarkAsReadRequest requestDTO
+  );
 }

@@ -5,6 +5,7 @@ import com.hkorea.skyisthelimit.common.response.SuccessCode;
 import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.controller.docs.NotificationControllerDocs;
 import com.hkorea.skyisthelimit.dto.criteria.NotificationCriteria;
+import com.hkorea.skyisthelimit.dto.notification.request.NotificationMarkAsReadRequest;
 import com.hkorea.skyisthelimit.dto.notification.response.NotificationResponse;
 import com.hkorea.skyisthelimit.service.NotificationService;
 import java.util.Set;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -55,6 +57,15 @@ public class NotificationController implements NotificationControllerDocs {
     NotificationResponse responseDTO = notificationService.markAsRead(messageId);
 
     return ApiResponse.of(SuccessCode.OK, responseDTO);
+  }
+
+  @PatchMapping("/notifications/me")
+  public ResponseEntity<ApiResponse<Void>> updateNotifications(
+      @RequestBody NotificationMarkAsReadRequest requestDTO) {
+
+    notificationService.markAsReadAll(requestDTO.getMessageIds());
+
+    return ApiResponse.of(SuccessCode.OK, null);
   }
 
 

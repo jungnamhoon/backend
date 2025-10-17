@@ -129,6 +129,23 @@ public class NotificationService {
     return NotificationMapper.toNotificationResponse(notification);
   }
 
+  @Transactional
+  public void markAsReadAll(List<Long> messageIds) {
+
+    List<Notification> notifications = notificationRepository.findAllById(messageIds);
+
+    if (notifications.isEmpty()) {
+      return;
+    }
+
+    notifications.forEach(notification -> {
+      if (!notification.isRead()) {
+        notification.setIsRead(true);
+      }
+    });
+    
+  }
+
   public MessageContent createMessage(Member fromMember, Integer studyId, MessageType messageType) {
 
     return new MessageContent(
