@@ -57,7 +57,7 @@ public class StudyMapper {
         .startDate(study.getStartDate())
         .endDate(study.getEndDate())
         .minRank(study.getMinRank())
-        .maxLevel(study.getMaxRank())
+        .maxRank(study.getMaxRank())
         .currentMemberCount(study.getCurrentMemberCount())
         .maxMemberCount(study.getMaxMemberCount())
         .description(study.getDescription())

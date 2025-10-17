@@ -37,7 +37,7 @@ public class StudyInfoResponse {
   private ProblemRank minRank;
 
   @Schema(description = "문제 최대 난이도")
-  private ProblemRank maxLevel;
+  private ProblemRank maxRank;
 
   @Schema(description = "현재 참여 인원 수", example = "5")
   private Integer currentMemberCount;

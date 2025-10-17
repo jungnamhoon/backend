@@ -103,9 +103,11 @@ public class Study {
     }
     if (requestDTO.getMinLevel() != null) {
       this.minLevel = requestDTO.getMinLevel();
+      this.minRank = ProblemRank.fromLevel(this.minLevel);
     }
     if (requestDTO.getMaxLevel() != null) {
       this.maxLevel = requestDTO.getMaxLevel();
+      this.maxRank = ProblemRank.fromLevel(this.maxLevel);
     }
   }
 
