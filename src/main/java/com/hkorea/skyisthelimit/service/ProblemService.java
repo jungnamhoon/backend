@@ -8,6 +8,8 @@ import com.hkorea.skyisthelimit.repository.ProblemRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -37,9 +39,14 @@ public class ProblemService {
   }
 
   private SolvedAcProblemResponseDTO fetchProblemFromSolvedAc(Integer baekjoonId) {
-
-    return restTemplate.getForObject(SOLVEDAC_API_URL, SolvedAcProblemResponseDTO.class,
-        baekjoonId);
+    try {
+      return restTemplate.getForObject(SOLVEDAC_API_URL, SolvedAcProblemResponseDTO.class,
+          baekjoonId);
+    } catch (HttpClientErrorException.NotFound e) {
+      throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+    } catch (RestClientException e) {
+      throw new BusinessException(ErrorCode.EXTERNAL_API_ERROR);
+    }
   }
 
   private void validateProblem(Problem problem) {

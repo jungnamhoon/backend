@@ -49,8 +49,8 @@ public enum ErrorCode {
   STUDY_PROBLEM_COUNT_MISMATCH(HttpStatus.BAD_REQUEST, "SP001",
       "요청된 문제 개수가 스터디에서 설정된 오늘의 문제 개수와 다릅니다. 올바른 개수로 다시 제출해주세요"),
   PROBLEM_LEVEL_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "SP002", "출제 문제 난이도가 맞지 않습니다."),
-
-  NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "N001", "해당 ID의 메시지가 존재하지 않습니다");
+  NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "N001", "해당 ID의 메시지가 존재하지 않습니다"),
+  EXTERNAL_API_ERROR(HttpStatus.BAD_GATEWAY, "E001", "외부 API 호출 중 오류가 발생했습니다");
 
 
   private final HttpStatus httpStatus;
