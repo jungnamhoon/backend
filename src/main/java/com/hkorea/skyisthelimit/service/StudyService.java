@@ -158,7 +158,9 @@ public class StudyService {
     }
 
     // 1. 기존 이미지 삭제
-    minioService.deleteOldImage(study.getThumbnailUrl());
+    if (study.getThumbnailUrl() != null) {
+      minioService.deleteOldImage(study.getThumbnailUrl());
+    }
 
     ImageUtils.validateImage(studyProfileImage);
 
