@@ -46,7 +46,7 @@
 
 🔗 **서비스 주소:** [https://skyisthelimit.cloud](https://skyisthelimit.cloud) \
 🔗 **API 문서 (Swagger):**
-[https://api.skyisthelimit.cloud/swagger-ui.html](https://skyisthelimit.cloud/swagger-ui.html)
+[https://api.skyisthelimit.cloud/swagger-ui.html](https://api.skyisthelimit.cloud/swagger-ui.html)
 > 로그인 및 API 요청은 Google OAuth2 인증 기반으로 이루어집니다.
 
 ---
@@ -91,4 +91,5 @@
 | 개발 인원 | 2명 (FE 1명 / BE 1명)                         |
 | 개발 기간 | 2025.09.01 ~ (FE 개발 진행중)                   |
 | 역할    | 백엔드 전담 개발 (인증/인가, 통계, 스터디 관리, API 설계 및 배포) |
+
 
