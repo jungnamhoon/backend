@@ -31,7 +31,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
   private static final String URL_SKYISTHELIMIT = "https://skyisthelimit.cloud?redirectedFromSocialLogin=true";
   private static final String URL_LOCAL = "http://localhost:3000?redirectedFromSocialLogin=true";
-  private static final String URL_EXTENSION = "https://jfojoohgijdgkigmgklhemocbglekpln.chromiumapp.org";
+  private static final String URL_EXTENSION = "https://eggmimjooihdjafnlakhjgjdgaabohkp.chromiumapp.org";
   private static final String URL_DEV = "https://test.skyisthelimit.cloud/frontend/main.html";
 
   private final JwtHelper jwtHelper;
@@ -59,13 +59,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     session.removeAttribute("redirect");
     String redirectUrl = determineRedirectUrl(redirect);
 
-    if (redirect.equals(REDIRECT_LOCAL)) {
+    if (redirect.equals(REDIRECT_LOCAL) || redirect.equals(REDIRECT_EXTENSION)) {
       addCookieWithSameSite(response, "refreshAuthorization", refreshToken);
     } else {
       addCookie(response, "refreshAuthorization", refreshToken);
     }
 
-    addCookie(response, "refreshAuthorization", refreshToken);
     response.sendRedirect(redirectUrl);
   }
 
