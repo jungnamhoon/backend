@@ -83,20 +83,17 @@
 
 ### 🔄 1. 문제 풀이 데이터 자동 수집
 
-<table>
-  <tr>
-    <td align="center">
-      문제 자동 업로드 
-      <br>
-      <img src="./docs/upload.gif" width="500" alt="문제 풀이 데이터 자동 수집 GIF"/>
-    </td>
-    <td align="center">
-      개인 학습 기록 화면
-      <br>
-      <img src="./docs/profile.png" width="500" alt="문제 풀이 데이터 자동 수집 이미지"/>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <p>
+    <b>문제 자동 업로드</b><br>
+    <img src="./docs/upload.gif" width="500" alt="문제 풀이 데이터 자동 수집 GIF"/>
+  </p>
+
+  <p>
+    <b>개인 학습 기록 화면</b><br>
+    <img src="./docs/profile.png" width="500" alt="문제 풀이 데이터 자동 수집 이미지"/>
+  </p>
+</div>
 
 - Chrome Extension 설치 시 백준 문제 풀이 기록 자동 서버 전송
 - 문제 난이도, 알고리즘 종류 등 정보 함께 수집
@@ -104,21 +101,17 @@
 
 ### 📊 2. 문제 관리
 
-<table>
-  <tr>
-    <td align="center">
-      도전의 흔적
-      <br>
-      <img src="./docs/problems.png" width="500" height="300" alt="도전의 흔적 이미지"/>
-    </td>
-    <td align="center">
-      랜덤 문제 뽑기
-      <br>
-      <img src="./docs/picking.png" width="500" height="300" alt="랜덤 문제 뽑기 이미지"/>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <p>
+    <b>도전의 흔적</b><br>
+    <img src="./docs/problems.png" width="500" height="300" alt="도전의 흔적 이미지"/>
+  </p>
 
+  <p>
+    <b>랜덤 문제 뽑기</b><br>
+    <img src="./docs/picking.png" width="500" height="300" alt="랜덤 문제 뽑기 이미지"/>
+  </p>
+</div>
 - 조건별 문제 검색 및 페이지 단위 조회
 - 랜덤 문제 추천 기능 제공
 - 오답 노트 기능으로 틀린 문제 관리
@@ -127,7 +120,7 @@
 
 <p align="center">
   📸 문제 관리 화면<br>
-  <img src="./docs/study.png" width="600" alt="스터디 이미지"/>
+  <img src="./docs/study.png" width="500" alt="스터디 이미지"/>
 </p>
 
 - 스터디 참여자별 학습 현황 집계
