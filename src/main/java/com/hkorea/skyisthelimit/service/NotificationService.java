@@ -19,6 +19,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,22 @@ public class NotificationService {
     emitterRepository.getEmitters().forEach((username, emitter) -> {
       sendToClient(username, "ping");
     });
+  }
+
+  @Scheduled(cron = "0 0 0 * * *")
+  @Transactional
+  public void deleteOldReadNotifications() {
+
+    LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+    List<Notification> oldReadNotifications = notificationRepository.findAllByIsReadTrueAndCreatedAtBefore(
+        sevenDaysAgo);
+    if (!oldReadNotifications.isEmpty()) {
+      notificationRepository.deleteAll(oldReadNotifications);
+      log.info("[SCHEDULER] ✅ {}개의 읽은 알림이 삭제되었습니다. ({} 이전 생성)", oldReadNotifications.size(),
+          sevenDaysAgo);
+    } else {
+      log.info("[SCHEDULER] 💤 삭제할 읽은 알림이 없습니다.");
+    }
   }
 
   public SseEmitter subscribe(String username) {
@@ -143,7 +160,7 @@ public class NotificationService {
         notification.setIsRead(true);
       }
     });
-    
+
   }
 
   public MessageContent createMessage(Member fromMember, Integer studyId, MessageType messageType) {

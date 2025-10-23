@@ -8,7 +8,6 @@ import com.hkorea.skyisthelimit.dto.criteria.NotificationCriteria;
 import com.hkorea.skyisthelimit.dto.notification.request.NotificationMarkAsReadRequest;
 import com.hkorea.skyisthelimit.dto.notification.response.NotificationResponse;
 import com.hkorea.skyisthelimit.service.NotificationService;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
@@ -30,15 +29,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationController implements NotificationControllerDocs {
 
   private final NotificationService notificationService;
-
-//  @GetMapping("/notifications/me")
-//  public ResponseEntity<ApiResponse<List<NotificationResponse>>> getNotifications(
-//      @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
-//
-//    List<NotificationResponse> responseDTOS = notificationService.getNotifications(
-//        customOAuth2User.getUsername());
-//    return ApiResponse.of(SuccessCode.OK, responseDTOS);
-//  }
 
   @GetMapping("/notifications/me")
   public ResponseEntity<ApiResponse<Page<NotificationResponse>>> getNotificationPage(
@@ -74,8 +64,8 @@ public class NotificationController implements NotificationControllerDocs {
     return notificationService.subscribe(customOAuth2User.getUsername());
   }
 
-  @GetMapping("/notifications/subscriptions")
-  public Set<String> getSubscriptions() {
-    return notificationService.getAllSubscribers();
-  }
+//  @GetMapping("/notifications/subscriptions")
+//  public Set<String> getSubscriptions() {
+//    return notificationService.getAllSubscribers();
+//  }
 }
