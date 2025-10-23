@@ -17,4 +17,7 @@ public class DailyProblemDTO {
 
   @Schema(description = "해당 문제가 출제된 날짜", example = "2025-09-06")
   private LocalDate assignedDate;
+
+  @Schema(description = "문제 url", example = "https://www.acmicpc.net/problem/1000")
+  private String url;
 }

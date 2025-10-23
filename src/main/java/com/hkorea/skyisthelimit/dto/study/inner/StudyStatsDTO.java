@@ -20,6 +20,9 @@ public class StudyStatsDTO {
   @Schema(description = "오늘의 문제 출제자 유저네임", example = "user1")
   private String dailyProblemSetterUsername;
 
+  @Schema(description = "오늘의 문제 출제자 프로필 url", example = "https://api.skyisthelimit.cloud/files/skyisthelimit/profile/basic-profile.png")
+  private String dailyProblemSetterProfileUrl;
+
   @Schema(description = "오늘의 문제")
   private List<DailyProblemDTO> dailyProblems;
 

@@ -59,6 +59,7 @@ public class StudyProblemMapper {
         .problemId(studyProblem.getProblem().getBaekjoonId())
         .title(studyProblem.getProblem().getTitle())
         .assignedDate(studyProblem.getAssignedDate())
+        .url(studyProblem.getProblem().getUrl())
         .build();
   }
 

@@ -321,7 +321,10 @@ public class StudyService {
 
   private StudyStatsDTO buildStudyStatsDTO(Study study) {
 
-    String dailyProblemSetterUsername = getProblemSetterUsername(study);
+    Member dailyProblemSetter = getProblemSetter(study);
+
+    String dailyProblemSetterUsername = dailyProblemSetter.getUsername();
+    String dailyProblemSetterProfileUrl = dailyProblemSetter.getProfileImageUrl();
 
     List<StudyProblem> dailyProblemList = getDailyProblemList(study);
 
@@ -349,6 +352,7 @@ public class StudyService {
 
     return StudyStatsDTO.builder()
         .dailyProblemSetterUsername(dailyProblemSetterUsername)
+        .dailyProblemSetterProfileUrl(dailyProblemSetterProfileUrl)
         .dailyProblems(dailyProblemDTOList)
         .membersNotSolvingDailyProblems(memberNotSolvingDailyProblemsDTOList)
         .problemListSolved(studyProblemSolvedDTOList)
@@ -359,9 +363,9 @@ public class StudyService {
 
   }
 
-  private String getProblemSetterUsername(Study study) {
+  private Member getProblemSetter(Study study) {
     Integer problemSetterIdx = study.getProblemSetterIdx();
-    return study.getMemberStudies().get(problemSetterIdx).getMember().getUsername();
+    return study.getMemberStudies().get(problemSetterIdx).getMember();
   }
 
   private List<StudyProblem> getDailyProblemList(Study study) {
