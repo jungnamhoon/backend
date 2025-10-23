@@ -33,11 +33,12 @@ public class AuthService {
 
     String username = jwtHelper.getUsername(refreshToken);
     String email = jwtHelper.getEmail(refreshToken);
-//    String profileImageUrl = jwtHelper.getProfileImageUrl(refreshToken);
     String profileImageUrl = memberService.getMember(username).getProfileImageUrl();
     String role = jwtHelper.getRole(refreshToken);
+    boolean isFirstLogin = jwtHelper.isFirstLogin(refreshToken);
 
-    return new JwtResponse(jwtHelper.createAccessToken(username, email, profileImageUrl, role));
+    return new JwtResponse(
+        jwtHelper.createAccessToken(username, email, profileImageUrl, role, isFirstLogin));
 
   }
 

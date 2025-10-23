@@ -18,5 +18,6 @@ public class UserDTO {
   private String realName; // 김남훈
   private String email; // southernlight3816@gmail.com
   private String role; // ROLE_USER
+  private boolean isFirstLogin;
 
 }

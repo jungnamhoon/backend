@@ -45,6 +45,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     String oauth2Username = customUserDetails.getOauth2Username();
     String role = extractOAuthRole(authentication);
+    boolean isFirstLogin = customUserDetails.isFirstLogin();
 
     Member member = memberService.getMemberByOauth2Username(oauth2Username);
 
@@ -52,7 +53,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     String email = member.getEmail();
     String profileImageUrl = member.getProfileImageUrl();
 
-    String refreshToken = jwtHelper.createRefreshToken(username, email, profileImageUrl, role);
+    String refreshToken = jwtHelper.createRefreshToken(username, email, profileImageUrl, role,
+        isFirstLogin);
 
     HttpSession session = request.getSession(false);
     String redirect = (String) session.getAttribute("redirect");

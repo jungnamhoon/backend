@@ -55,8 +55,13 @@ public class JwtHelper {
         .getExpiration().before(new Date());
   }
 
+  public boolean isFirstLogin(String token) {
+    return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload()
+        .get("isFirstLogin", Boolean.class);
+  }
+
   public String createAccessToken(String username, String email, String profileImageUrl,
-      String role) {
+      String role, boolean isFirstLogin) {
 
     return Jwts.builder()
         .claim("username", username)
@@ -65,6 +70,7 @@ public class JwtHelper {
 
         .claim("category", "access")
         .claim("role", role)
+        .claim("isFirstLogin", isFirstLogin)
         .issuedAt(new Date(System.currentTimeMillis()))
         .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
         .signWith(secretKey)
@@ -72,7 +78,7 @@ public class JwtHelper {
   }
 
   public String createRefreshToken(String username, String email, String profileImageUrl,
-      String role) {
+      String role, boolean isFirstLogin) {
 
     return Jwts.builder()
         .claim("username", username)
@@ -81,6 +87,7 @@ public class JwtHelper {
 
         .claim("category", "refresh")
         .claim("role", role)
+        .claim("isFirstLogin", isFirstLogin)
         .issuedAt(new Date(System.currentTimeMillis()))
         .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
         .signWith(secretKey)
