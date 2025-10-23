@@ -36,7 +36,7 @@ public class TestController implements TestControllerDocs {
   @GetMapping("/token")
   public ResponseEntity<ApiResponse<String>> generateTestToken(@RequestParam String username) {
     String accessToken = jwtHelper.createAccessToken(username, username + "@" + "gmail.com", null,
-        "ROLE_USER");
+        "ROLE_USER", false);
 
     return ApiResponse.of(SuccessCode.OK, accessToken);
   }

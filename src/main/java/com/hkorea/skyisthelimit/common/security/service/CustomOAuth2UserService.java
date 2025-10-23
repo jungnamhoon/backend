@@ -35,8 +35,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     Optional<Member> existMemberOpt = memberRepository.findByOauth2Username(oauth2Username);
 
     if (existMemberOpt.isEmpty()) {
-      Member member = new Member();
 
+      Member member = new Member();
       member.setOauth2Username(oauth2Username);
       member.setUsername(oAuth2Response.getEmail().split("@")[0]);
       member.setRealName(oAuth2Response.getName());
@@ -54,6 +54,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       userDTO.setRealName(oAuth2Response.getName());
       userDTO.setEmail(oAuth2Response.getEmail());
       userDTO.setRole("ROLE_USER");
+      userDTO.setFirstLogin(true);
 
       return new CustomOAuth2User(userDTO);
     } else {
@@ -69,6 +70,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       userDTO.setRealName(existMember.getRealName());
       userDTO.setEmail(existMember.getEmail());
       userDTO.setRole(existMember.getRole());
+      userDTO.setFirstLogin(false);
 
       return new CustomOAuth2User(userDTO);
     }
