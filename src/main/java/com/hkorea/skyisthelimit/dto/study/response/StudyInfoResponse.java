@@ -48,8 +48,11 @@ public class StudyInfoResponse {
   @Schema(description = "스터디 설명", example = "매일 알고리즘 문제를 풀고 리뷰하는 스터디입니다.")
   private String description;
 
-  @Schema(description = "오늘의 문제 출제자 유저네임", example = "user1")
+  @Schema(description = "오늘의 문제 출제자 username")
   private String dailyProblemsSetterUsername;
+
+  @Schema(description = "오늘의 문제 출제자 profileUrl")
+  private String dailyProblemsSetterProfileUrl;
 
   @Schema(description = "오늘의 문제")
   private List<DailyProblemDTO> dailyProblems;

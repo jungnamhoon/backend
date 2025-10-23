@@ -63,6 +63,8 @@ public class StudyMapper {
         .description(study.getDescription())
 
         .dailyProblemsSetterUsername(studyStatsDTO.getDailyProblemSetterUsername())
+        .dailyProblemsSetterProfileUrl(studyStatsDTO.getDailyProblemSetterProfileUrl())
+
         .dailyProblems(studyStatsDTO.getDailyProblems())
         .totalSolvedProblemsCount(studyStatsDTO.getTotalSolvedProblemCount())
         .streak(studyStatsDTO.getStreak())
