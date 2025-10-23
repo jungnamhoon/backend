@@ -42,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class MemberService {
 
+  private static final String BASIC_PROFILE_URL = "https://api.skyisthelimit.cloud/files/skyisthelimit/profile/basic-profile.png";
   private final MemberRepository memberRepository;
   private final MinioService minioService;
 
@@ -77,7 +78,9 @@ public class MemberService {
     }
 
     // 1. 기존 이미지 삭제
-    minioService.deleteOldImage(member.getProfileImageUrl());
+    if (!member.getProfileImageUrl().equals(BASIC_PROFILE_URL)) {
+      minioService.deleteOldImage(member.getProfileImageUrl());
+    }
 
     // 2. 이미지 검증
     ImageUtils.validateImage(profileImage);
