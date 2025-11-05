@@ -21,7 +21,7 @@ public class ImageUtils {
 
 
   public static void validateImage(MultipartFile image) throws IOException {
-    
+
     validateFileSize(image.getSize());
     validateMimeType(image.getContentType());
     BufferedImage originalImage = ImageIO.read(image.getInputStream());
@@ -31,7 +31,7 @@ public class ImageUtils {
   public static byte[] createThumbnail(MultipartFile image) throws IOException {
 
     BufferedImage originalImage = ImageIO.read(image.getInputStream());
-    String formatName = "png"; // 기본값
+    String formatName = "png";
     String originalFilename = image.getOriginalFilename();
 
     if (originalFilename != null && originalFilename.contains(".")) {
