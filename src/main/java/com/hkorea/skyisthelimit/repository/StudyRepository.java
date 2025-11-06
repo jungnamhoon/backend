@@ -21,6 +21,7 @@ public interface StudyRepository extends JpaRepository<Study, Integer> {
           SELECT 1
           FROM MemberStudy ms
           WHERE ms.study = sp.study
+          AND ms.status = com.hkorea.skyisthelimit.entity.enums.MemberStudyStatus.APPROVED
             AND NOT EXISTS (
               SELECT 1
               FROM MemberProblem mp

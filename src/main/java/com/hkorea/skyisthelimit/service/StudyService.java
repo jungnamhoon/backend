@@ -80,8 +80,11 @@ public class StudyService {
     List<Study> studies = studyRepository.findAll();
 
     for (Study study : studies) {
-      List<MemberStudy> memberStudies = study.getMemberStudies();
-      int size = memberStudies.size();
+      List<MemberStudy> approvedMemberList = study.getMemberStudies().stream()
+          .filter(ms -> ms.getStatus() == MemberStudyStatus.APPROVED)
+          .toList();
+
+      int size = approvedMemberList.size();
       if (size == 0) {
         continue;
       }
@@ -364,8 +367,16 @@ public class StudyService {
   }
 
   private Member getProblemSetter(Study study) {
+    List<MemberStudy> approvedMembers = study.getMemberStudies().stream()
+        .filter(ms -> ms.getStatus() == MemberStudyStatus.APPROVED)
+        .toList();
+
+    if (approvedMembers.isEmpty()) {
+      return null;
+    }
+
     Integer problemSetterIdx = study.getProblemSetterIdx();
-    return study.getMemberStudies().get(problemSetterIdx).getMember();
+    return approvedMembers.get(problemSetterIdx).getMember();
   }
 
   private List<StudyProblem> getDailyProblemList(Study study) {
