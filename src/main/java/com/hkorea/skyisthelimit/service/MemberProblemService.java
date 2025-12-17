@@ -62,14 +62,12 @@ public class MemberProblemService {
 
     QMemberProblem mp = QMemberProblem.memberProblem;
     QProblem p = QProblem.problem;
-    QProblemTag pt = QProblemTag.problemTag;
 
     BooleanExpression predicate =
         criteria.toPredicate().and(mp.member.username.eq(username));
     OrderSpecifier<?> orderSpecifier = criteria.toOrderSpecifier(mp);
     Pageable pageable = criteria.toPageable();
 
-    // 1️⃣ MemberProblem 조회 (여기까지는 측정 대상 아님)
     List<MemberProblem> memberProblemList = queryFactory
         .selectFrom(mp)
         .join(mp.problem,p).fetchJoin()
@@ -79,22 +77,9 @@ public class MemberProblemService {
         .limit(pageable.getPageSize())
         .fetch();
 
-    // 2️⃣ Hibernate Statistics 준비
-    SessionFactory sessionFactory =
-        em.getEntityManagerFactory().unwrap(SessionFactory.class);
-    Statistics stats = sessionFactory.getStatistics();
-    stats.clear();                     // 🔥 여기서 초기화
-    stats.setStatisticsEnabled(true);
-
-    // 3️⃣ DTO 변환 (이 구간에서 발생한 쿼리만 측정)
     List<MemberProblemResponse> memberProblemResponseList =
         MemberProblemMapper.toMemberProblemResponseList(memberProblemList);
 
-    // 4️⃣ DTO 변환 중 발생한 쿼리 수
-    long dtoQueryCount = stats.getPrepareStatementCount();
-    System.out.println("[DTO 변환 중 실행된 쿼리 수] = " + dtoQueryCount);
-
-    // 5️⃣ 전체 count
     long total = queryDSLService.fetchTotalCount(mp, predicate);
 
     return new PageImpl<>(memberProblemResponseList, pageable, total);
