@@ -17,16 +17,23 @@ import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.entity.MemberProblem;
 import com.hkorea.skyisthelimit.entity.Problem;
 import com.hkorea.skyisthelimit.entity.QMemberProblem;
+import com.hkorea.skyisthelimit.entity.QProblem;
+import com.hkorea.skyisthelimit.entity.embeddable.QProblemTag;
 import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import com.hkorea.skyisthelimit.repository.MemberProblemRepository;
 import com.hkorea.skyisthelimit.service.enums.SolveStatus;
+import com.querydsl.core.QueryFactory;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -40,28 +47,40 @@ public class MemberProblemService {
   private final MemberService memberService;
   private final ProblemService problemService;
   private final QueryDSLHelper queryDSLService;
+  private final JPAQueryFactory queryFactory;
 
   private final MemberProblemRepository memberProblemRepository;
+  private final EntityManager em;
 
   @Transactional
-  public Page<MemberProblemResponse> getMemberProblemPage(String username,
-      PageableCriteria<QMemberProblem> criteria) {
+  public Page<MemberProblemResponse> getMemberProblemPage(
+      String username,
+      PageableCriteria<QMemberProblem> criteria
+  ) {
 
     memberService.getMember(username);
 
-    QMemberProblem memberProblem = QMemberProblem.memberProblem;
+    QMemberProblem mp = QMemberProblem.memberProblem;
+    QProblem p = QProblem.problem;
 
-    BooleanExpression predicate = criteria.toPredicate().and(usernameEq(username));
-    OrderSpecifier<?> orderSpecifier = criteria.toOrderSpecifier(memberProblem);
+    BooleanExpression predicate =
+        criteria.toPredicate().and(mp.member.username.eq(username));
+    OrderSpecifier<?> orderSpecifier = criteria.toOrderSpecifier(mp);
     Pageable pageable = criteria.toPageable();
 
-    List<MemberProblem> memberProblemList = queryDSLService.fetchEntities(memberProblem, predicate,
-        orderSpecifier, pageable);
+    List<MemberProblem> memberProblemList = queryFactory
+        .selectFrom(mp)
+        .join(mp.problem,p).fetchJoin()
+        .where(predicate)
+        .orderBy(orderSpecifier)
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
 
-    long total = queryDSLService.fetchTotalCount(memberProblem, predicate);
+    List<MemberProblemResponse> memberProblemResponseList =
+        MemberProblemMapper.toMemberProblemResponseList(memberProblemList);
 
-    List<MemberProblemResponse> memberProblemResponseList = MemberProblemMapper.toMemberProblemResponseList(
-        memberProblemList);
+    long total = queryDSLService.fetchTotalCount(mp, predicate);
 
     return new PageImpl<>(memberProblemResponseList, pageable, total);
   }
