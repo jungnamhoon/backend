@@ -18,14 +18,6 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
-      #      - name: make application.yml
-      #        if: contains(github.ref,'dev')
-      #        run: |
-      #          mkdir -p ./src/main/resources
-      #          cd ./src/main/resources
-      #          echo "${{ secrets.APPLICATION_YML }}" > ./application.yml
-      #          echo "${{ secrets.APPLICATION_DEV_YML }}" > ./application-dev.yml
-
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
@@ -55,6 +47,5 @@ jobs:
             docker login -u southernlight3816 -p ${{ secrets.DOCKER_PASSWORD }}
             cd ~/skyisthelimit
             
-            docker compose down
-            docker compose pull springboot
-            docker compose up -d
+            chmod +x ./deploy.sh
+            ./deploy.sh
