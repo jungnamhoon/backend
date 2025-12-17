@@ -9,6 +9,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
@@ -21,6 +22,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
@@ -41,11 +43,10 @@ public class Problem {
   private ProblemRank rank;
   private Integer level;
 
-
-  @ElementCollection
+  @ElementCollection(fetch = FetchType.LAZY)
   @CollectionTable(name = "problem_tags", joinColumns = @JoinColumn(name = "problem_id"))
+  @BatchSize(size = 10)
   private List<ProblemTag> problemTagList;
-
 
   @OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
