@@ -34,6 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
         path.startsWith("/swagger-ui/") ||
         path.startsWith("/v3/api-docs") ||
         path.equals("/swagger-ui.html") ||
+        path.equals("/actuator/health") ||
         path.equals("/api/test/token");
   }
 
