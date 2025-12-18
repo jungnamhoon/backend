@@ -46,6 +46,6 @@ jobs:
           script: |
             docker login -u southernlight3816 -p ${{ secrets.DOCKER_PASSWORD }}
             cd ~/skyisthelimit
-            
+            docker rmi southernlight3816/skyisthelimit-prod:latest || true
             chmod +x ./deploy.sh
             ./deploy.sh
