@@ -6,10 +6,9 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-22.04
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -18,20 +17,6 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '17'
-
-      - name: make application.yml
-        if: contains(github.ref,'main')
-        run: |
-          mkdir -p ./src/main/resources
-          cd ./src/main/resources
-          
-          cat <<EOF > application.yml
-          ${{ secrets.APPLICATION_YML }}
-          EOF
-          
-          cat <<EOF > application-prod.yml
-          ${{ secrets.APPLICATION_PROD_YML }}
-          EOF
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -45,7 +30,7 @@ jobs:
           username: southernlight3816
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and tag Docker image
+      - name: Build and push Docker image
         run: |
           IMAGE_NAME=southernlight3816/skyisthelimit-prod:latest
           docker build -t skyisthelimit-prod .
@@ -58,11 +43,9 @@ jobs:
           host: ${{ secrets.VULTR_PROD_HOST }}
           username: ${{ secrets.VULTR_USERNAME }}
           password: ${{ secrets.VULTR_PROD_PASSWORD }}
-
           script: |
             docker login -u southernlight3816 -p ${{ secrets.DOCKER_PASSWORD }}
             cd ~/skyisthelimit
             
-            docker compose down
-            docker compose pull springboot
-            docker compose up -d
+            chmod +x ./deploy.sh
+            ./deploy.sh
