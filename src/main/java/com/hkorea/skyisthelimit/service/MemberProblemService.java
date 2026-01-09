@@ -2,10 +2,13 @@ package com.hkorea.skyisthelimit.service;
 
 import static com.hkorea.skyisthelimit.repository.predicate.MemberProblemPredicates.usernameEq;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hkorea.skyisthelimit.common.exception.BusinessException;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
 import com.hkorea.skyisthelimit.common.utils.PromptUtil;
 import com.hkorea.skyisthelimit.common.utils.QueryDSLHelper;
+import com.hkorea.skyisthelimit.common.utils.VectorUtils;
 import com.hkorea.skyisthelimit.common.utils.mapper.MemberProblemMapper;
 import com.hkorea.skyisthelimit.dto.criteria.Criteria;
 import com.hkorea.skyisthelimit.dto.criteria.PageableCriteria;
@@ -38,6 +41,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +49,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberProblemService {
 
 
@@ -54,9 +59,11 @@ public class MemberProblemService {
   private final JPAQueryFactory queryFactory;
 
   private final MemberProblemRepository memberProblemRepository;
-  private final OpenAiService  openAiService;
+  private final OpenAiService openAiService;
+  private final ObjectMapper objectMapper;
 
   @Transactional
+
   public Page<MemberProblemResponse> getMemberProblemPage(
       String username,
       PageableCriteria<QMemberProblem> criteria
@@ -74,7 +81,7 @@ public class MemberProblemService {
 
     List<MemberProblem> memberProblemList = queryFactory
         .selectFrom(mp)
-        .join(mp.problem,p).fetchJoin()
+        .join(mp.problem, p).fetchJoin()
         .where(predicate)
         .orderBy(orderSpecifier)
         .offset(pageable.getOffset())
@@ -98,7 +105,10 @@ public class MemberProblemService {
     MemberProblem memberProblem = handleSolve(member, problem, requestDTO.getSubmitId(),
         requestDTO.getIsSolved());
 
-    if(requestDTO.getResultCategory() == ResultCategory.WA){
+    String reasonText;
+    String embeddingJson = null;
+
+    if (requestDTO.getResultCategory() == ResultCategory.WA) {
 
       List<String> tagNames = problem.getProblemTagList().stream()
           .map(ProblemTag::getKoName)
@@ -113,14 +123,44 @@ public class MemberProblemService {
           tagNames
       );
 
-      String generatedReasonByAi = openAiService.generate(PromptUtil.createIncorrectSummaryPrompt(incorrectSummaryDTO));
+      String generatedReasonByAi = openAiService.generate(
+          PromptUtil.createIncorrectSummaryPrompt(incorrectSummaryDTO));
 
-      WrongReason wrongReason =  new WrongReason(memberProblem ,generatedReasonByAi);
+      List<float[]> embeddings = openAiService.generateEmbedding(List.of(generatedReasonByAi),
+          "text-embedding-3-small");
+
+      if (!embeddings.isEmpty()) {
+
+        float[] currentVector = embeddings.get(0);
+
+        try {
+          embeddingJson = objectMapper.writeValueAsString(embeddings.get(0));
+        } catch (JsonProcessingException e) {
+          log.error("임베딩 데이터를 JSON으로 변환하는 중 오류 발생: {}", e.getMessage());
+        }
+
+        for (WrongReason existing: memberProblem.getWrongReasons()) {
+          if(existing.getEmbeddingJson() == null) continue;
+
+          try {
+            float[] existingVector = objectMapper.readValue(existing.getEmbeddingJson(), float[].class);
+
+            double similarity = VectorUtils.cosineSimilarity(currentVector, existingVector);
+
+            System.out.println("helloworld : " + similarity);
+
+          } catch (Exception e) {
+            log.error("유사도 분석 중 오류");
+          }
+        }
+      }
+
+      WrongReason wrongReason = new WrongReason(memberProblem, generatedReasonByAi,embeddingJson);
 
       memberProblem.getWrongReasons().add(wrongReason);
     } else {
       WrongReason wrongReason = new WrongReason(memberProblem,
-          requestDTO.getResultCategory().getDescription());
+          requestDTO.getResultCategory().getDescription(),embeddingJson);
 
       memberProblem.getWrongReasons().add(wrongReason);
     }
