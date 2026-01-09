@@ -14,6 +14,7 @@ import com.hkorea.skyisthelimit.dto.memberproblem.response.MemberProblemResponse
 import com.hkorea.skyisthelimit.dto.memberproblem.response.NoteResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.RandomProblemResponse;
 import com.hkorea.skyisthelimit.service.MemberProblemService;
+import com.hkorea.skyisthelimit.service.OpenAiService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -50,11 +51,7 @@ public class MemberProblemController implements MemberProblemControllerDocs {
       @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @RequestBody SolveRequest requestDTO) {
 
-    SolveResponse responseDTO = memberProblemService.solveProblem(
-        customOAuth2User.getUsername(),
-        requestDTO.getSubmitId(),
-        requestDTO.getBaekjoonId(),
-        requestDTO.getIsSolved());
+    SolveResponse responseDTO = memberProblemService.solveProblem(customOAuth2User.getUsername(), requestDTO);
     return ApiResponse.of(SuccessCode.OK, responseDTO);
   }
 

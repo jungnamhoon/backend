@@ -4,23 +4,29 @@ import static com.hkorea.skyisthelimit.repository.predicate.MemberProblemPredica
 
 import com.hkorea.skyisthelimit.common.exception.BusinessException;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
+import com.hkorea.skyisthelimit.common.utils.PromptUtil;
 import com.hkorea.skyisthelimit.common.utils.QueryDSLHelper;
 import com.hkorea.skyisthelimit.common.utils.mapper.MemberProblemMapper;
 import com.hkorea.skyisthelimit.dto.criteria.Criteria;
 import com.hkorea.skyisthelimit.dto.criteria.PageableCriteria;
 import com.hkorea.skyisthelimit.dto.memberproblem.request.MemberProblemTagCountResponse;
+import com.hkorea.skyisthelimit.dto.memberproblem.request.SolveRequest;
 import com.hkorea.skyisthelimit.dto.memberproblem.request.SolveResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.MemberProblemResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.NoteResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.RandomProblemResponse;
+import com.hkorea.skyisthelimit.dto.prompt.IncorrectSummaryDTO;
 import com.hkorea.skyisthelimit.entity.Member;
 import com.hkorea.skyisthelimit.entity.MemberProblem;
 import com.hkorea.skyisthelimit.entity.Problem;
 import com.hkorea.skyisthelimit.entity.QMemberProblem;
 import com.hkorea.skyisthelimit.entity.QProblem;
+import com.hkorea.skyisthelimit.entity.WrongReason;
+import com.hkorea.skyisthelimit.entity.embeddable.ProblemTag;
 import com.hkorea.skyisthelimit.entity.embeddable.QProblemTag;
 import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import com.hkorea.skyisthelimit.repository.MemberProblemRepository;
+import com.hkorea.skyisthelimit.service.enums.ResultCategory;
 import com.hkorea.skyisthelimit.service.enums.SolveStatus;
 import com.querydsl.core.QueryFactory;
 import com.querydsl.core.types.OrderSpecifier;
@@ -32,8 +38,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.SessionFactory;
-import org.hibernate.stat.Statistics;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -50,7 +54,7 @@ public class MemberProblemService {
   private final JPAQueryFactory queryFactory;
 
   private final MemberProblemRepository memberProblemRepository;
-  private final EntityManager em;
+  private final OpenAiService  openAiService;
 
   @Transactional
   public Page<MemberProblemResponse> getMemberProblemPage(
@@ -86,13 +90,40 @@ public class MemberProblemService {
   }
 
   @Transactional
-  public SolveResponse solveProblem(String username, Long submitId, Integer baekjoonId,
-      Boolean isSolved) {
+  public SolveResponse solveProblem(String username, SolveRequest requestDTO) {
 
     Member member = memberService.getMember(username);
-    Problem problem = problemService.getOrRegisterProblem(baekjoonId);
+    Problem problem = problemService.getOrRegisterProblem(requestDTO.getBaekjoonId());
 
-    MemberProblem memberProblem = handleSolve(member, problem, submitId, isSolved);
+    MemberProblem memberProblem = handleSolve(member, problem, requestDTO.getSubmitId(),
+        requestDTO.getIsSolved());
+
+    if(requestDTO.getResultCategory() == ResultCategory.WA){
+
+      List<String> tagNames = problem.getProblemTagList().stream()
+          .map(ProblemTag::getKoName)
+          .toList();
+
+      IncorrectSummaryDTO incorrectSummaryDTO = new IncorrectSummaryDTO(
+          requestDTO.getBaekjoonId().toString(),
+          requestDTO.getProblemDescription(),
+          requestDTO.getProblemInput(),
+          requestDTO.getProblemOutput(),
+          requestDTO.getCode(),
+          tagNames
+      );
+
+      String generatedReasonByAi = openAiService.generate(PromptUtil.createIncorrectSummaryPrompt(incorrectSummaryDTO));
+
+      WrongReason wrongReason =  new WrongReason(memberProblem ,generatedReasonByAi);
+
+      memberProblem.getWrongReasons().add(wrongReason);
+    } else {
+      WrongReason wrongReason = new WrongReason(memberProblem,
+          requestDTO.getResultCategory().getDescription());
+
+      memberProblem.getWrongReasons().add(wrongReason);
+    }
 
     return MemberProblemMapper.toSolveResponse(memberProblem);
   }
@@ -161,7 +192,6 @@ public class MemberProblemService {
     return switch (solveStatus) {
 
       case NOTHING -> memberProblem;
-
       case CORRECT_NOT_TRIED -> handleCorrectNotTried(member, problem, submitId);
       case CORRECT_ALREADY_SOLVED -> handleCorrectAlreadySolved(memberProblem, submitId);
       case CORRECT_ALREADY_UNSOLVED -> handleCorrectAlreadyUnsolved(memberProblem, submitId);

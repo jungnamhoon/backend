@@ -1,6 +1,7 @@
 package com.hkorea.skyisthelimit.entity;
 
 import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -8,8 +9,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,6 +49,10 @@ public class MemberProblem {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "problem_id")
   private Problem problem;
+
+  @Builder.Default
+  @OneToMany(mappedBy = "memberProblem", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<WrongReason> wrongReasons = new ArrayList<>();
 
   public static MemberProblem create(Member member, Problem problem, MemberProblemStatus status) {
 
