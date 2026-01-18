@@ -1,12 +1,15 @@
 package com.hkorea.skyisthelimit.common.utils;
 
+import com.hkorea.skyisthelimit.dto.ai.AiRecommendationProblem;
 import com.hkorea.skyisthelimit.dto.prompt.IncorrectSummaryDTO;
+import com.hkorea.skyisthelimit.dto.prompt.ProblemRecommendDTO;
 import java.util.List;
-import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.core.ParameterizedTypeReference;
 
 public class PromptUtil {
 
@@ -74,10 +77,58 @@ public class PromptUtil {
     return new Prompt(List.of(systemMessage, userMessage),options);
   }
 
-  public static Prompt createProblemRecommendPrompt(){
-    SystemMessage systemMessage = new SystemMessage("");
-    UserMessage userMessage = new UserMessage("");
-    AssistantMessage assistantMessage = new AssistantMessage("");
-    return new Prompt(systemMessage, userMessage, assistantMessage);
+  public static Prompt createProblemRecommendPrompt(ProblemRecommendDTO problemRecommendDTO){
+    BeanOutputConverter<List<AiRecommendationProblem>> converter =
+        new BeanOutputConverter<>(new ParameterizedTypeReference<List<AiRecommendationProblem>>() {});
+    String systemInstruction = """
+        너는 백준 알고리즘 문제 추천 전문가다.
+        
+        절대 규칙:
+        1. 반드시 JSON 형식으로만 응답한다
+        2. 설명 문장, 인사, 마크다운을 절대 포함하지 않는다
+        3. 세개의 문제를 추천한다
+        4. problemNumber는 숫자만 사용한다
+        5. reason은 한국어로 작성한다
+        6. reason은 200자 이내로 작성한다
+        7. 추천 문제는 사용자가 이전 문제를 풀지 못하게 만든
+           '원인이나 어려움이 다시 등장할 수 있는 상황'을 포함해야 한다
+        8. 원인을 그대로 반복하거나 단순 요약하면 안 된다
+        9. reason은 알고리즘을 잘 모르는 사람도 이해할 수 있게,
+           쉽고 구체적인 말로 설명해야 한다
+        
+        {format}
+        """;
+
+    SystemMessage systemMessage = new SystemMessage(
+        systemInstruction.replace("{format}", converter.getFormat())
+    );
+
+    UserMessage userMessage = new UserMessage("""
+        다음 정보를 바탕으로 문제를 추천해줘.
+        
+        [사용자가 풀었던 문제 번호]
+        %s
+        
+        [문제 태그]
+        %s
+        
+        [이 문제를 풀지 못하게 만든 이유]
+        %s
+        
+        위 문제를 해결하는 과정에서
+        어려움을 느꼈던 지점이 다시 나타날 수 있는 문제를 세개 추천해줘.
+        """.formatted(
+                problemRecommendDTO.baekjoonId(),
+                String.join(", ", problemRecommendDTO.tags()),
+                problemRecommendDTO.wrongReason()
+            ));
+
+    OpenAiChatOptions options = OpenAiChatOptions.builder()
+        .model("gpt-4.1-mini")
+        .temperature(0.3)
+        .build();
+
+    return new Prompt(List.of(systemMessage, userMessage),options);
   }
+
 }

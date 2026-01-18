@@ -4,6 +4,7 @@ import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.common.response.SuccessCode;
 import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.controller.docs.MemberProblemControllerDocs;
+import com.hkorea.skyisthelimit.dto.ai.AiRecommendationProblem;
 import com.hkorea.skyisthelimit.dto.criteria.MemberProblemCriteria;
 import com.hkorea.skyisthelimit.dto.criteria.RandomProblemCriteria;
 import com.hkorea.skyisthelimit.dto.memberproblem.request.MemberProblemTagCountResponse;
@@ -13,8 +14,8 @@ import com.hkorea.skyisthelimit.dto.memberproblem.request.SolveResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.MemberProblemResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.NoteResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.RandomProblemResponse;
+import com.hkorea.skyisthelimit.service.AnalysisProblemService;
 import com.hkorea.skyisthelimit.service.MemberProblemService;
-import com.hkorea.skyisthelimit.service.OpenAiService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberProblemController implements MemberProblemControllerDocs {
 
   private final MemberProblemService memberProblemService;
+  private final AnalysisProblemService analysisProblemService;
 
   @GetMapping("/me/problems")
   public ResponseEntity<ApiResponse<Page<MemberProblemResponse>>> getMemberProblemPage(
@@ -87,6 +89,16 @@ public class MemberProblemController implements MemberProblemControllerDocs {
         customOAuth2User.getUsername(),
         criteria);
     return ApiResponse.of(SuccessCode.OK, responseDTO);
+  }
+
+  @GetMapping("/me/analysis-problem")
+  public ResponseEntity<ApiResponse<List<AiRecommendationProblem>>> getAnalysisProblem(
+      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
+      @ModelAttribute RandomProblemCriteria criteria) throws Exception{
+
+    List<AiRecommendationProblem> responseDTOList = analysisProblemService.getRecommendedProblem(
+        customOAuth2User.getUsername(), criteria);
+    return ApiResponse.of(SuccessCode.OK, responseDTOList);
   }
 
   @GetMapping("/me/statistics")
