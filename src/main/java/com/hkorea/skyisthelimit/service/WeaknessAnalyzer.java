@@ -31,18 +31,35 @@ public class WeaknessAnalyzer {
       return Collections.emptyList();
     }
 
-    // 1. 임베딩 데이터를 DoublePoint로 변환
-    List<DoublePoint> points = convertToPoints(wrongReasons);
+    long totalStart = System.currentTimeMillis();
 
-    // 2. DBSCAN 클러스터링 실행 (eps: 0.15, minPts: 1)
+    // 1. 데이터 로드 및 변환 시간 측정
+    long step1Start = System.currentTimeMillis();
+    List<DoublePoint> points = convertToPoints(wrongReasons);
+    long step1End = System.currentTimeMillis();
+
+    // 2. 클러스터링(순수 연산) 시간 측정
+    long step2Start = System.currentTimeMillis();
     DBSCANClusterer<DoublePoint> clusterer = new DBSCANClusterer<>(0.15, 1);
     List<Cluster<DoublePoint>> clusters = clusterer.cluster(points);
+    long step2End = System.currentTimeMillis();
 
-    // 3. 통계 데이터 추출
+    // 3. 통계 및 정렬 시간 측정
+    long step3Start = System.currentTimeMillis();
     List<WeaknessStat> stats = buildStats(clusters, points, wrongReasons);
-
-    // 4. 빈도수 기준 내림차순 정렬
     stats.sort(Comparator.comparingInt(WeaknessStat::count).reversed());
+    long step3End = System.currentTimeMillis();
+
+    long totalEnd = System.currentTimeMillis();
+
+    // 결과 로그 출력
+    System.out.println("======= [분석 성능 결과] =======");
+    System.out.println("분석 대상 개수: " + wrongReasons.size());
+    System.out.println("1. JSON 역직렬화 및 변환: " + (step1End - step1Start) + "ms");
+    System.out.println("2. DBSCAN 연산 소요 시간: " + (step2End - step2Start) + "ms");
+    System.out.println("3. 결과 빌드 및 정렬 시간: " + (step3End - step3Start) + "ms");
+    System.out.println("총 합계 소요 시간: " + (totalEnd - totalStart) + "ms");
+    System.out.println("===============================");
 
     return stats;
   }
@@ -64,7 +81,6 @@ public class WeaknessAnalyzer {
     }
 
     return points;
-
   }
 
   private List<WeaknessStat> buildStats(List<Cluster<DoublePoint>> clusters,

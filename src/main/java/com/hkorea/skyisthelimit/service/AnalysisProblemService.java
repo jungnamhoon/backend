@@ -31,6 +31,7 @@ public class AnalysisProblemService {
   private final WeaknessAnalyzer weaknessAnalyzer;
   private final WeaknessSelector weaknessSelector;
   private final AnalysisProblemMapper analysisProblemMapper;
+  private final MockOpenAiService mockOpenAiService;
 
   @Transactional
   public List<AiRecommendationProblem> getRecommendedProblem(String username,
@@ -51,6 +52,32 @@ public class AnalysisProblemService {
 
     Prompt problemRecommendPrompt = PromptUtil.createProblemRecommendPrompt(problemRecommendDTO);
     String rawJson = openAiService.generate(problemRecommendPrompt);
+
+    BeanOutputConverter<List<AiRecommendationProblem>> converter =
+        new BeanOutputConverter<>(new ParameterizedTypeReference<>() {});
+
+    return converter.convert(rawJson);
+  }
+
+  @Transactional
+  public List<AiRecommendationProblem> getRecommendedProblemTest(String username,
+      Criteria<QMemberProblem> criteria) {
+
+    // 1. MemberProblems 가져오기
+    QMemberProblem memberProblem = QMemberProblem.memberProblem;
+    BooleanExpression predicate = criteria.toPredicate().and(usernameEq(username));
+    List<MemberProblem> selectedMemberProblems = queryDSLHelper.fetchEntities(memberProblem, predicate);
+
+    // 2. 임베딩 -> DoublePoint 변환
+    List<WrongReason> wrongReasons = collectWrongReasons(selectedMemberProblems);
+
+    List<WeaknessStat> stats = weaknessAnalyzer.analyze(wrongReasons);
+
+    WeaknessStat selected = weaknessSelector.selectByWeight(stats);
+    ProblemRecommendDTO problemRecommendDTO = analysisProblemMapper.toProblemRecommendDTO(selected);
+
+    Prompt problemRecommendPrompt = PromptUtil.createProblemRecommendPrompt(problemRecommendDTO);
+    String rawJson = mockOpenAiService.generate(problemRecommendPrompt);
 
     BeanOutputConverter<List<AiRecommendationProblem>> converter =
         new BeanOutputConverter<>(new ParameterizedTypeReference<>() {});
