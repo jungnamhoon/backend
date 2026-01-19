@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/test")
-@Profile({"local", "dev"})
+@Profile({"local", "dev", "test"})
 public class TestController implements TestControllerDocs {
 
   private final JwtHelper jwtHelper;
@@ -55,14 +55,14 @@ public class TestController implements TestControllerDocs {
     return ApiResponse.of(SuccessCode.OK, "rotate ProblemSetterIdx successfully");
   }
 
-  @GetMapping("/recommendations")
-  public ResponseEntity<ApiResponse<List<AiRecommendationProblem>>> getAnalysisProblem(
-      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
-      @ModelAttribute RandomProblemCriteria criteria) throws Exception{
-
-    List<AiRecommendationProblem> responseDTOList = analysisProblemService.getRecommendedProblemTest(
-        customOAuth2User.getUsername(), criteria);
-    return ApiResponse.of(SuccessCode.OK, responseDTOList);
-  }
+//  @GetMapping("/recommendations")
+//  public ResponseEntity<ApiResponse<List<AiRecommendationProblem>>> getAnalysisProblem(
+//      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
+//      @ModelAttribute RandomProblemCriteria criteria) throws Exception{
+//
+//    List<AiRecommendationProblem> responseDTOList = analysisProblemService.getRecommendedProblemTest(
+//        customOAuth2User.getUsername(), criteria);
+//    return ApiResponse.of(SuccessCode.OK, responseDTOList);
+//  }
 
 }

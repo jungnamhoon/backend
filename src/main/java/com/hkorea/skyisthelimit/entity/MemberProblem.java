@@ -50,10 +50,6 @@ public class MemberProblem {
   @JoinColumn(name = "problem_id")
   private Problem problem;
 
-  @Builder.Default
-  @OneToMany(mappedBy = "memberProblem", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<WrongReason> wrongReasons = new ArrayList<>();
-
   public static MemberProblem create(Member member, Problem problem, MemberProblemStatus status) {
 
     return MemberProblem.builder()

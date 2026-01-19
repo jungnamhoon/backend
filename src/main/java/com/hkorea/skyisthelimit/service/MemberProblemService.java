@@ -24,21 +24,22 @@ import com.hkorea.skyisthelimit.entity.MemberProblem;
 import com.hkorea.skyisthelimit.entity.Problem;
 import com.hkorea.skyisthelimit.entity.QMemberProblem;
 import com.hkorea.skyisthelimit.entity.QProblem;
+import com.hkorea.skyisthelimit.entity.Weakness;
 import com.hkorea.skyisthelimit.entity.WrongReason;
 import com.hkorea.skyisthelimit.entity.embeddable.ProblemTag;
-import com.hkorea.skyisthelimit.entity.embeddable.QProblemTag;
 import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import com.hkorea.skyisthelimit.repository.MemberProblemRepository;
+import com.hkorea.skyisthelimit.repository.WeaknessRepository;
+import com.hkorea.skyisthelimit.repository.WrongReasonRepository;
 import com.hkorea.skyisthelimit.service.enums.ResultCategory;
 import com.hkorea.skyisthelimit.service.enums.SolveStatus;
-import com.querydsl.core.QueryFactory;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +62,8 @@ public class MemberProblemService {
 
   private final MemberProblemRepository memberProblemRepository;
   private final OpenAiService openAiService;
-  private final ObjectMapper objectMapper;
+  private final WeaknessRepository weaknessRepository;
+  private final WrongReasonRepository wrongReasonRepository;
 
   @Transactional
 
@@ -105,9 +108,6 @@ public class MemberProblemService {
     MemberProblem memberProblem = handleSolve(member, problem, requestDTO.getSubmitId(),
         requestDTO.getIsSolved());
 
-    String reasonText;
-    String embeddingJson = null;
-
     if (requestDTO.getResultCategory() == ResultCategory.WA) {
 
       List<String> tagNames = problem.getProblemTagList().stream()
@@ -126,46 +126,33 @@ public class MemberProblemService {
       String generatedReasonByAi = openAiService.generate(
           PromptUtil.createIncorrectSummaryPrompt(incorrectSummaryDTO));
 
-      List<float[]> embeddings = openAiService.generateEmbedding(List.of(generatedReasonByAi),
-          "text-embedding-3-small");
+      float[] embedding = openAiService.generateEmbedding(List.of(generatedReasonByAi),
+          "text-embedding-3-small").get(0);
 
-      if (!embeddings.isEmpty()) {
-
-        float[] currentVector = embeddings.get(0);
-
-        try {
-          embeddingJson = objectMapper.writeValueAsString(embeddings.get(0));
-        } catch (JsonProcessingException e) {
-          log.error("임베딩 데이터를 JSON으로 변환하는 중 오류 발생: {}", e.getMessage());
-        }
-
-        for (WrongReason existing: memberProblem.getWrongReasons()) {
-          if(existing.getEmbeddingJson() == null) continue;
-
-          try {
-            float[] existingVector = objectMapper.readValue(existing.getEmbeddingJson(), float[].class);
-
-            double similarity = VectorUtils.cosineSimilarity(currentVector, existingVector);
-
-            System.out.println("helloworld : " + similarity);
-
-          } catch (Exception e) {
-            log.error("유사도 분석 중 오류");
-          }
-        }
+      if (embedding == null || embedding.length == 0) {
+        return null;
       }
 
-      WrongReason wrongReason = new WrongReason(memberProblem, generatedReasonByAi,embeddingJson);
+      WeaknessRepository.WeaknessWithDistance nearestWeakness =
+          weaknessRepository.findNearestWeakness(embedding).orElse(null);
 
-      memberProblem.getWrongReasons().add(wrongReason);
-    } else {
-      WrongReason wrongReason = new WrongReason(memberProblem,
-          requestDTO.getResultCategory().getDescription(),embeddingJson);
+      double threshold = 0.15;
 
-      memberProblem.getWrongReasons().add(wrongReason);
+      Weakness targetWeakness;
+
+      if(nearestWeakness == null || nearestWeakness.getDistance() > threshold) {
+        targetWeakness = weaknessRepository.save(new Weakness(generatedReasonByAi, embedding));
+      } else {
+        targetWeakness = weaknessRepository.findById(nearestWeakness.getId()).orElse(null);
+        targetWeakness.incrementFrequency();
+      }
+
+      WrongReason wrongReason = new WrongReason(memberProblem,targetWeakness,generatedReasonByAi);
+      wrongReasonRepository.save(wrongReason);
+
     }
+    return null;
 
-    return MemberProblemMapper.toSolveResponse(memberProblem);
   }
 
   @Transactional
