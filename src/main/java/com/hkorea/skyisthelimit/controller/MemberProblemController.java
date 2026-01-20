@@ -97,22 +97,11 @@ public class MemberProblemController implements MemberProblemControllerDocs {
       @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
       @ModelAttribute RandomProblemCriteria criteria) {
 
-//    System.out.println("1. [Tomcat] 요청 진입: " + customOAuth2User.getUsername());
-
     return analysisProblemService.getRecommendedProblemAsync(customOAuth2User.getUsername(), criteria)
         .thenApply(result -> {
-//          System.out.println("2. [Async] 데이터 확보 완료: " + (result != null ? result.size() : "null"));
           return ApiResponse.of(SuccessCode.OK, result);
         })
         .exceptionally(ex -> {
-          // 💡 여기서 비동기 스레드 내부의 에러를 잡습니다.
-          System.err.println("🚨 [Async Error] 비동기 작업 중 예외 발생!");
-          System.err.println("에러 메시지: " + ex.getMessage());
-          System.err.println("에러 원인: " + ex.getCause());
-          ex.printStackTrace();
-
-          // 에러 발생 시 클라이언트에게 에러 응답을 반환하도록 설정
-          // (ErrorCode는 본인의 프로젝트에 맞게 수정하세요)
           return ResponseEntity.status(500).body(null);
         });
   }
