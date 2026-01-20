@@ -2,13 +2,10 @@ package com.hkorea.skyisthelimit.service;
 
 
 import com.hkorea.skyisthelimit.common.utils.PromptUtil;
-import com.hkorea.skyisthelimit.common.utils.QueryDSLHelper;
-import com.hkorea.skyisthelimit.common.utils.mapper.AnalysisProblemMapper;
 import com.hkorea.skyisthelimit.dto.ai.AiRecommendationProblem;
 import com.hkorea.skyisthelimit.dto.criteria.Criteria;
 import com.hkorea.skyisthelimit.dto.prompt.ProblemRecommendDTO;
 import com.hkorea.skyisthelimit.entity.QMemberProblem;
-import com.hkorea.skyisthelimit.repository.WeaknessRepository;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -25,6 +22,7 @@ public class AnalysisProblemService {
   private final MockOpenAiService mockOpenAiService;
   private final Executor aiTaskExecutor;
   private final ProblemSelectionService problemSelectionService;
+  private final OpenAiService openAiService;
 
   public CompletableFuture<List<AiRecommendationProblem>> getRecommendedProblemAsync(String username, Criteria<QMemberProblem> criteria) {
 
@@ -43,14 +41,20 @@ public class AnalysisProblemService {
 
     // 2. 수집된 데이터를 바탕으로 AI 호출
     Prompt problemRecommendPrompt = PromptUtil.createProblemRecommendPrompt(problemRecommendDTO);
+//    String rawJson = openAiService.generate(problemRecommendPrompt);
     String rawJson = mockOpenAiService.generate(problemRecommendPrompt);
 
-
-    // 3. Json 문자열을 파싱하여 최종 객체 리스트로 변환
     BeanOutputConverter<List<AiRecommendationProblem>> converter =
         new BeanOutputConverter<>(new ParameterizedTypeReference<>() {});
 
-    return converter.convert(rawJson);
+    List<AiRecommendationProblem> recommendedList = converter.convert(rawJson);
+    return recommendedList.stream()
+        .map(p -> new AiRecommendationProblem(
+            p.problemId(),
+            "https://www.acmicpc.net/problem/" + p.problemId(),
+            p.reason()
+        ))
+        .toList();
   }
 
 }
