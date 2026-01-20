@@ -17,6 +17,7 @@ import com.hkorea.skyisthelimit.dto.memberproblem.response.RandomProblemResponse
 import com.hkorea.skyisthelimit.service.AnalysisProblemService;
 import com.hkorea.skyisthelimit.service.MemberProblemService;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -92,15 +93,29 @@ public class MemberProblemController implements MemberProblemControllerDocs {
   }
 
   @GetMapping("/me/analysis-problem")
-  public ResponseEntity<ApiResponse<List<AiRecommendationProblem>>> getAnalysisProblem(
+  public CompletableFuture<ResponseEntity<ApiResponse<List<AiRecommendationProblem>>>> getAnalysisProblem(
       @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
-      @ModelAttribute RandomProblemCriteria criteria) throws Exception{
+      @ModelAttribute RandomProblemCriteria criteria) {
 
-    List<AiRecommendationProblem> responseDTOList = analysisProblemService.getRecommendedProblem(
-        customOAuth2User.getUsername(), criteria);
-    return ApiResponse.of(SuccessCode.OK, responseDTOList);
+//    System.out.println("1. [Tomcat] 요청 진입: " + customOAuth2User.getUsername());
+
+    return analysisProblemService.getRecommendedProblemAsync(customOAuth2User.getUsername(), criteria)
+        .thenApply(result -> {
+//          System.out.println("2. [Async] 데이터 확보 완료: " + (result != null ? result.size() : "null"));
+          return ApiResponse.of(SuccessCode.OK, result);
+        })
+        .exceptionally(ex -> {
+          // 💡 여기서 비동기 스레드 내부의 에러를 잡습니다.
+          System.err.println("🚨 [Async Error] 비동기 작업 중 예외 발생!");
+          System.err.println("에러 메시지: " + ex.getMessage());
+          System.err.println("에러 원인: " + ex.getCause());
+          ex.printStackTrace();
+
+          // 에러 발생 시 클라이언트에게 에러 응답을 반환하도록 설정
+          // (ErrorCode는 본인의 프로젝트에 맞게 수정하세요)
+          return ResponseEntity.status(500).body(null);
+        });
   }
-
   @GetMapping("/me/statistics")
   public ResponseEntity<ApiResponse<List<MemberProblemTagCountResponse>>> getMemberStatistics(
       @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {

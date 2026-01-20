@@ -1,6 +1,5 @@
 package com.hkorea.skyisthelimit.service;
 
-import static com.hkorea.skyisthelimit.repository.predicate.MemberProblemPredicates.*;
 
 import com.hkorea.skyisthelimit.common.utils.PromptUtil;
 import com.hkorea.skyisthelimit.common.utils.QueryDSLHelper;
@@ -8,16 +7,11 @@ import com.hkorea.skyisthelimit.common.utils.mapper.AnalysisProblemMapper;
 import com.hkorea.skyisthelimit.dto.ai.AiRecommendationProblem;
 import com.hkorea.skyisthelimit.dto.criteria.Criteria;
 import com.hkorea.skyisthelimit.dto.prompt.ProblemRecommendDTO;
-import com.hkorea.skyisthelimit.entity.MemberProblem;
-import com.hkorea.skyisthelimit.entity.Problem;
 import com.hkorea.skyisthelimit.entity.QMemberProblem;
-import com.hkorea.skyisthelimit.entity.Weakness;
-import com.hkorea.skyisthelimit.entity.WrongReason;
 import com.hkorea.skyisthelimit.repository.WeaknessRepository;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.converter.BeanOutputConverter;
@@ -28,33 +22,31 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AnalysisProblemService {
 
-  private final QueryDSLHelper queryDSLHelper;
-  private final OpenAiService openAiService;
-  private final WeaknessSelector weaknessSelector;
-  private final AnalysisProblemMapper analysisProblemMapper;
-  private final WeaknessRepository weaknessRepository;
+  private final MockOpenAiService mockOpenAiService;
+  private final Executor aiTaskExecutor;
+  private final ProblemSelectionService problemSelectionService;
 
-  @Transactional
+  public CompletableFuture<List<AiRecommendationProblem>> getRecommendedProblemAsync(String username, Criteria<QMemberProblem> criteria) {
+
+    return CompletableFuture.supplyAsync(() -> {
+      // 이 블록 안의 코드는 이제 'AI-Worker-' 스레드에서 돌아갑니다.
+      return getRecommendedProblem(username, criteria);
+    }, aiTaskExecutor);
+  }
+
   public List<AiRecommendationProblem> getRecommendedProblem(String username,
       Criteria<QMemberProblem> criteria) {
 
-    // 1. MemberProblems 가져오기
-    QMemberProblem memberProblem = QMemberProblem.memberProblem;
-    BooleanExpression predicate = criteria.toPredicate().and(usernameEq(username));
-    List<MemberProblem> selectedMemberProblems = queryDSLHelper.fetchEntities(memberProblem, predicate);
+    // 1. 추천에 필요한 데이터 가져오기
+    ProblemRecommendDTO problemRecommendDTO = problemSelectionService.getRecommendationData(
+        username, criteria);
 
-    List<Weakness> topFiveWeaknesses = weaknessRepository.findTopFiveWeaknesses(selectedMemberProblems);
-    Weakness selectedWeakness = weaknessSelector.selectByWeight(topFiveWeaknesses);
-
-    List<WrongReason> wrongReasons = selectedWeakness.getWrongReasons();
-    int randomIndex = new Random().nextInt(wrongReasons.size());
-    Problem selectedProblem = wrongReasons.get(randomIndex).getMemberProblem().getProblem();
-
-    ProblemRecommendDTO problemRecommendDTO = analysisProblemMapper.toProblemRecommendDTO(selectedWeakness,selectedProblem);
-
+    // 2. 수집된 데이터를 바탕으로 AI 호출
     Prompt problemRecommendPrompt = PromptUtil.createProblemRecommendPrompt(problemRecommendDTO);
-    String rawJson = openAiService.generate(problemRecommendPrompt);
+    String rawJson = mockOpenAiService.generate(problemRecommendPrompt);
 
+
+    // 3. Json 문자열을 파싱하여 최종 객체 리스트로 변환
     BeanOutputConverter<List<AiRecommendationProblem>> converter =
         new BeanOutputConverter<>(new ParameterizedTypeReference<>() {});
 

@@ -97,6 +97,11 @@ public class LoggingFilter implements Filter {
       return;
     }
 
+    if(uri.equals("/api/members/me/analysis-problem")) {
+      ResponseLoggingUtils.logAsyncResponse(requestId, httpRequest, httpResponse);
+      return;
+    }
+
     if (httpResponse instanceof CustomHttpResponseWrapper responseWrapper) {
 
       String body = new String(responseWrapper.getResponseData());

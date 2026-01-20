@@ -52,25 +52,17 @@ public class ResponseLoggingUtils {
     );
   }
 
-  public static void logResponseHeaders(HttpServletResponse response) {
-    Map<String, Collection<String>> headers = new HashMap<>();
-    Collection<String> headerNames = response.getHeaderNames();
+  public static void logAsyncResponse(String requestId, HttpServletRequest request,
+      HttpServletResponse response) {
 
-    // 모든 헤더를 순회
-    for (String headerName : headerNames) {
-      // 각 헤더의 값을 리스트로 받아옴
-      Collection<String> headerValues = response.getHeaders(headerName);
-      headers.put(headerName, headerValues);
-    }
+    int status = response.getStatus();
 
-    // 출력
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      String jsonHeaders = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(headers);
-      log.info("Response Headers: {}", jsonHeaders);
-    } catch (JsonProcessingException e) {
-      log.error("Error processing response headers to JSON", e);
-    }
+    log.info("[RESPONSE] [{}] [{} {}] - Async (Status: {})",
+        requestId,
+        request.getMethod(),
+        request.getRequestURI(),
+        status
+    );
   }
 
 }

@@ -1,6 +1,7 @@
 package com.hkorea.skyisthelimit.common.filter;
 
 import com.hkorea.skyisthelimit.common.CustomHttpResponseWrapper;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,7 +21,7 @@ public class ResponseWrapperFilter implements Filter {
 
     if (request instanceof HttpServletRequest) {
       String path = ((HttpServletRequest) request).getServletPath();
-      if (path.equals("/api/notifications/stream")) {
+      if (path.equals("/api/notifications/stream") || path.equals("/api/members/me/analysis-problem")) {
         chain.doFilter(request, response);
         return;
       }
