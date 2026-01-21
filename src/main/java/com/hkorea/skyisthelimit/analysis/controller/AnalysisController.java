@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/analysis")
-public class AnalysisController {
+public class AnalysisController implements AnalysisControllerDocs{
 
   private final RecommendationService recommendationService;
 
