@@ -8,16 +8,17 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum ResultCategory {
 
-  AC("맞았습니다", "ac"),
-  PE("출력 형식 에러", "pe"),
-  WA("틀렸습니다", "wa"),
-  TLE("시간 초과", "tle"),
-  MLE("메모리 초과", "mle"),
-  RTE("런타임 에러", "rte"),
-  CE("컴파일 에러", "ce");
+  AC("맞았습니다", "ac",null),
+  PE("출력 형식 에러", "pe",1L),
+  WA("틀렸습니다", "wa",null),
+  TLE("시간 초과", "tle",2L),
+  MLE("메모리 초과", "mle",3L),
+  RTE("런타임 에러", "rte",4L),
+  CE("컴파일 에러", "ce",5L);
 
   private final String description;
   private final String code;
+  private final Long weaknessId;
 
   @JsonCreator
   public static ResultCategory fromCode(String code) {

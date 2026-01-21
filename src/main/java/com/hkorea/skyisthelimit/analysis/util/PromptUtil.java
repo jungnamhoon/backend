@@ -1,8 +1,8 @@
-package com.hkorea.skyisthelimit.common.utils;
+package com.hkorea.skyisthelimit.analysis.util;
 
-import com.hkorea.skyisthelimit.dto.ai.AiRecommendationProblem;
+import com.hkorea.skyisthelimit.analysis.dto.internal.ProblemRecommendContext;
+import com.hkorea.skyisthelimit.analysis.dto.response.AiRecommendationProblem;
 import com.hkorea.skyisthelimit.dto.prompt.IncorrectSummaryDTO;
-import com.hkorea.skyisthelimit.dto.prompt.ProblemRecommendDTO;
 import java.util.List;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -77,7 +77,7 @@ public class PromptUtil {
     return new Prompt(List.of(systemMessage, userMessage),options);
   }
 
-  public static Prompt createProblemRecommendPrompt(ProblemRecommendDTO problemRecommendDTO){
+  public static Prompt createProblemRecommendPrompt(ProblemRecommendContext context){
     BeanOutputConverter<List<AiRecommendationProblem>> converter =
         new BeanOutputConverter<>(new ParameterizedTypeReference<List<AiRecommendationProblem>>() {});
     String systemInstruction = """
@@ -118,9 +118,9 @@ public class PromptUtil {
         위 문제를 해결하는 과정에서
         어려움을 느꼈던 지점이 다시 나타날 수 있는 문제를 세개 추천해줘.
         """.formatted(
-                problemRecommendDTO.baekjoonId(),
-                String.join(", ", problemRecommendDTO.tags()),
-                problemRecommendDTO.wrongReason()
+                context.baekjoonId(),
+                String.join(", ", context.tags()),
+                context.wrongReason()
             ));
 
     OpenAiChatOptions options = OpenAiChatOptions.builder()

@@ -2,20 +2,13 @@ package com.hkorea.skyisthelimit.controller;
 
 import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.common.response.SuccessCode;
-import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.common.utils.JwtHelper;
 import com.hkorea.skyisthelimit.controller.docs.TestControllerDocs;
-import com.hkorea.skyisthelimit.dto.ai.AiRecommendationProblem;
-import com.hkorea.skyisthelimit.dto.criteria.RandomProblemCriteria;
-import com.hkorea.skyisthelimit.service.AnalysisProblemService;
 import com.hkorea.skyisthelimit.service.StudyService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,7 +22,6 @@ public class TestController implements TestControllerDocs {
 
   private final JwtHelper jwtHelper;
   private final StudyService studyService;
-  private final AnalysisProblemService analysisProblemService;
 
   @GetMapping("/public")
   public ResponseEntity<ApiResponse<String>> publicTest() {
@@ -54,15 +46,5 @@ public class TestController implements TestControllerDocs {
     studyService.rotateProblemSetterIdx();
     return ApiResponse.of(SuccessCode.OK, "rotate ProblemSetterIdx successfully");
   }
-
-//  @GetMapping("/recommendations")
-//  public ResponseEntity<ApiResponse<List<AiRecommendationProblem>>> getAnalysisProblem(
-//      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
-//      @ModelAttribute RandomProblemCriteria criteria) throws Exception{
-//
-//    List<AiRecommendationProblem> responseDTOList = analysisProblemService.getRecommendedProblemTest(
-//        customOAuth2User.getUsername(), criteria);
-//    return ApiResponse.of(SuccessCode.OK, responseDTOList);
-//  }
 
 }

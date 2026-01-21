@@ -1,5 +1,6 @@
-package com.hkorea.skyisthelimit.entity;
+package com.hkorea.skyisthelimit.analysis.entity;
 
+import com.hkorea.skyisthelimit.entity.MemberProblem;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -33,6 +34,13 @@ public class WrongReason {
     this.memberProblem = memberProblem;
     this.weakness = weakness;
     this.reason = reason;
+  }
+
+  public Integer getProblemId() {
+    if (this.memberProblem == null || this.memberProblem.getProblem() == null) {
+      return null;
+    }
+    return this.memberProblem.getProblem().getBaekjoonId();
   }
 
 }

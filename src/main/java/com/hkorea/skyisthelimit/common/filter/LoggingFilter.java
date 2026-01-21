@@ -97,7 +97,7 @@ public class LoggingFilter implements Filter {
       return;
     }
 
-    if(uri.equals("/api/members/me/analysis-problem")) {
+    if(uri.equals("/api/analysis/me/recommended-problems")) {
       ResponseLoggingUtils.logAsyncResponse(requestId, httpRequest, httpResponse);
       return;
     }

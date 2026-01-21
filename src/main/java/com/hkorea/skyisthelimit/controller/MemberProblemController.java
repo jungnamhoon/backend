@@ -4,7 +4,6 @@ import com.hkorea.skyisthelimit.common.response.ApiResponse;
 import com.hkorea.skyisthelimit.common.response.SuccessCode;
 import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.controller.docs.MemberProblemControllerDocs;
-import com.hkorea.skyisthelimit.dto.ai.AiRecommendationProblem;
 import com.hkorea.skyisthelimit.dto.criteria.MemberProblemCriteria;
 import com.hkorea.skyisthelimit.dto.criteria.RandomProblemCriteria;
 import com.hkorea.skyisthelimit.dto.memberproblem.request.MemberProblemTagCountResponse;
@@ -14,10 +13,8 @@ import com.hkorea.skyisthelimit.dto.memberproblem.request.SolveResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.MemberProblemResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.NoteResponse;
 import com.hkorea.skyisthelimit.dto.memberproblem.response.RandomProblemResponse;
-import com.hkorea.skyisthelimit.service.AnalysisProblemService;
 import com.hkorea.skyisthelimit.service.MemberProblemService;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberProblemController implements MemberProblemControllerDocs {
 
   private final MemberProblemService memberProblemService;
-  private final AnalysisProblemService analysisProblemService;
 
   @GetMapping("/me/problems")
   public ResponseEntity<ApiResponse<Page<MemberProblemResponse>>> getMemberProblemPage(
@@ -92,19 +88,6 @@ public class MemberProblemController implements MemberProblemControllerDocs {
     return ApiResponse.of(SuccessCode.OK, responseDTO);
   }
 
-  @GetMapping("/me/analysis-problem")
-  public CompletableFuture<ResponseEntity<ApiResponse<List<AiRecommendationProblem>>>> getAnalysisProblem(
-      @AuthenticationPrincipal CustomOAuth2User customOAuth2User,
-      @ModelAttribute RandomProblemCriteria criteria) {
-
-    return analysisProblemService.getRecommendedProblemAsync(customOAuth2User.getUsername(), criteria)
-        .thenApply(result -> {
-          return ApiResponse.of(SuccessCode.OK, result);
-        })
-        .exceptionally(ex -> {
-          return ResponseEntity.status(500).body(null);
-        });
-  }
   @GetMapping("/me/statistics")
   public ResponseEntity<ApiResponse<List<MemberProblemTagCountResponse>>> getMemberStatistics(
       @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {

@@ -1,7 +1,7 @@
-package com.hkorea.skyisthelimit.dto.ai;
+package com.hkorea.skyisthelimit.analysis.dto.response;
 
 public record AiRecommendationProblem(
-    String problemId,
+    Long problemId,
     String problemUrl,
     String reason
 ) {

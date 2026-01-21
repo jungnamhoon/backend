@@ -1,10 +1,10 @@
-package com.hkorea.skyisthelimit.service;
+package com.hkorea.skyisthelimit.common.infrastructure.ai;
 
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MockOpenAiService {
+public class MockOpenAiClient {
 
   public String generate(Prompt prompt) {
     try {

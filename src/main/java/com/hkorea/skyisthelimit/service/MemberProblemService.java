@@ -2,13 +2,10 @@ package com.hkorea.skyisthelimit.service;
 
 import static com.hkorea.skyisthelimit.repository.predicate.MemberProblemPredicates.usernameEq;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hkorea.skyisthelimit.common.exception.BusinessException;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
-import com.hkorea.skyisthelimit.common.utils.PromptUtil;
+import com.hkorea.skyisthelimit.analysis.util.PromptUtil;
 import com.hkorea.skyisthelimit.common.utils.QueryDSLHelper;
-import com.hkorea.skyisthelimit.common.utils.VectorUtils;
 import com.hkorea.skyisthelimit.common.utils.mapper.MemberProblemMapper;
 import com.hkorea.skyisthelimit.dto.criteria.Criteria;
 import com.hkorea.skyisthelimit.dto.criteria.PageableCriteria;
@@ -24,13 +21,13 @@ import com.hkorea.skyisthelimit.entity.MemberProblem;
 import com.hkorea.skyisthelimit.entity.Problem;
 import com.hkorea.skyisthelimit.entity.QMemberProblem;
 import com.hkorea.skyisthelimit.entity.QProblem;
-import com.hkorea.skyisthelimit.entity.Weakness;
-import com.hkorea.skyisthelimit.entity.WrongReason;
+import com.hkorea.skyisthelimit.analysis.entity.Weakness;
+import com.hkorea.skyisthelimit.analysis.entity.WrongReason;
 import com.hkorea.skyisthelimit.entity.embeddable.ProblemTag;
 import com.hkorea.skyisthelimit.entity.enums.MemberProblemStatus;
 import com.hkorea.skyisthelimit.repository.MemberProblemRepository;
-import com.hkorea.skyisthelimit.repository.WeaknessRepository;
-import com.hkorea.skyisthelimit.repository.WrongReasonRepository;
+import com.hkorea.skyisthelimit.analysis.repository.WeaknessRepository;
+import com.hkorea.skyisthelimit.analysis.repository.WrongReasonRepository;
 import com.hkorea.skyisthelimit.service.enums.ResultCategory;
 import com.hkorea.skyisthelimit.service.enums.SolveStatus;
 import com.querydsl.core.types.OrderSpecifier;
@@ -39,7 +36,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +43,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +61,6 @@ public class MemberProblemService {
   private final WrongReasonRepository wrongReasonRepository;
 
   @Transactional
-
   public Page<MemberProblemResponse> getMemberProblemPage(
       String username,
       PageableCriteria<QMemberProblem> criteria
@@ -105,11 +99,24 @@ public class MemberProblemService {
     Member member = memberService.getMember(username);
     Problem problem = problemService.getOrRegisterProblem(requestDTO.getBaekjoonId());
 
-    MemberProblem memberProblem = handleSolve(member, problem, requestDTO.getSubmitId(),
+    MemberProblem memberProblem = findMemberProblem(username, requestDTO.getBaekjoonId());
+    SolveStatus solveStatus = SolveStatus.of(memberProblem, requestDTO.getSubmitId(),
         requestDTO.getIsSolved());
 
-    if (requestDTO.getResultCategory() == ResultCategory.WA) {
+    if(solveStatus == SolveStatus.NOTHING) {
+      return null;
+    }
 
+    memberProblem = handleSolve(member, problem, memberProblem, requestDTO.getSubmitId(),
+        requestDTO.getIsSolved());
+
+    ResultCategory resultCategory = requestDTO.getResultCategory();
+
+    // 문제를 맞춘 경우
+    if(resultCategory == ResultCategory.AC) {
+      return null;
+    // 틀렸습니다
+    } else if (resultCategory == ResultCategory.WA) {
       List<String> tagNames = problem.getProblemTagList().stream()
           .map(ProblemTag::getKoName)
           .toList();
@@ -129,10 +136,6 @@ public class MemberProblemService {
       float[] embedding = openAiService.generateEmbedding(List.of(generatedReasonByAi),
           "text-embedding-3-small").get(0);
 
-      if (embedding == null || embedding.length == 0) {
-        return null;
-      }
-
       WeaknessRepository.WeaknessWithDistance nearestWeakness =
           weaknessRepository.findNearestWeakness(embedding).orElse(null);
 
@@ -149,10 +152,23 @@ public class MemberProblemService {
 
       WrongReason wrongReason = new WrongReason(memberProblem,targetWeakness,generatedReasonByAi);
       wrongReasonRepository.save(wrongReason);
+    // 나머지(출력 형식 에러, 시간 초과, 메모리 초과 등등)
+    } else {
 
+      Long weaknessId = requestDTO.getResultCategory().getWeaknessId();
+
+      Weakness targetWeakness = weaknessRepository.findById(weaknessId)
+          .orElseThrow(() -> new RuntimeException("공통 약점 데이터(ID:" + weaknessId + ")가 존재하지 않습니다"));
+      targetWeakness.incrementFrequency();
+
+      WrongReason wrongReason = new WrongReason(
+          memberProblem,
+          targetWeakness,
+          targetWeakness.getWeaknessSummary()
+      );
+      wrongReasonRepository.save(wrongReason);
     }
     return null;
-
   }
 
   @Transactional
@@ -209,10 +225,8 @@ public class MemberProblemService {
         .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_PROBLEM_NOT_FOUND));
   }
 
-  private MemberProblem handleSolve(Member member, Problem problem, Long submitId,
+  private MemberProblem handleSolve(Member member, Problem problem,MemberProblem memberProblem ,Long submitId,
       boolean isSolved) {
-
-    MemberProblem memberProblem = findMemberProblem(member.getUsername(), problem.getBaekjoonId());
 
     SolveStatus solveStatus = SolveStatus.of(memberProblem, submitId, isSolved);
 

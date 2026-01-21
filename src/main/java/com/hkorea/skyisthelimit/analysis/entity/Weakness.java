@@ -1,4 +1,4 @@
-package com.hkorea.skyisthelimit.entity;
+package com.hkorea.skyisthelimit.analysis.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
@@ -31,10 +30,6 @@ public class Weakness {
   @OneToMany(mappedBy = "weakness", cascade = CascadeType.ALL)
   private final List<WrongReason> wrongReasons = new ArrayList<>();
 
-  @Lob
-  @Column(columnDefinition = "TEXT")
-  private String embeddingJson;
-
   @JdbcTypeCode(SqlTypes.VECTOR)
   @Column(columnDefinition = "vector(1536)")
   private float[] embedding;
@@ -46,6 +41,12 @@ public class Weakness {
   public Weakness(String weaknessSummary,float[] embedding) {
     this.weaknessSummary = weaknessSummary;
     this.frequency = 1;
+    this.embedding = embedding;
+  }
+
+  public Weakness(String weaknessSummary, int frequency,float[] embedding) {
+    this.weaknessSummary = weaknessSummary;
+    this.frequency = frequency;
     this.embedding = embedding;
   }
 

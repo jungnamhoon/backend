@@ -21,7 +21,9 @@ public class ResponseWrapperFilter implements Filter {
 
     if (request instanceof HttpServletRequest) {
       String path = ((HttpServletRequest) request).getServletPath();
-      if (path.equals("/api/notifications/stream") || path.equals("/api/members/me/analysis-problem")) {
+      if (path.equals("/api/notifications/stream")
+          || path.equals("/api/members/me/analysis-problem")
+          || path.equals("/api/analysis/me/recommended-problems")) {
         chain.doFilter(request, response);
         return;
       }
