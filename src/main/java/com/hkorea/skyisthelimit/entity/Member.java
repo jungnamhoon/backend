@@ -16,11 +16,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -54,6 +52,23 @@ public class Member {
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private Set<MemberStudy> memberStudies = new HashSet<>();
+
+  public static Member create(String oauth2Username, String username, String realName,
+      String email, String role, String profileImageUrl, String nickname) {
+    return Member.builder()
+        .oauth2Username(oauth2Username)
+        .username(username)
+        .realName(realName)
+        .email(email)
+        .role(role)
+        .profileImageUrl(profileImageUrl)
+        .nickname(nickname)
+        .build();
+  }
+
+  public void updateProfileImage(String imageUrl) {
+    this.profileImageUrl = imageUrl;
+  }
 
   public void update(MemberUpdateRequest requestDTO) {
     this.nickname = requestDTO.getNickname();

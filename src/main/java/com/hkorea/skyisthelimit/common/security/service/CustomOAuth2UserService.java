@@ -35,15 +35,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     if (existMemberOpt.isEmpty()) {
 
-      Member member = new Member();
-      member.setOauth2Username(oauth2Username);
-      member.setUsername(oAuth2Response.getEmail().split("@")[0]);
-      member.setRealName(oAuth2Response.getName());
-      member.setEmail(oAuth2Response.getEmail());
-      member.setRole("ROLE_USER");
-
-      member.setProfileImageUrl(storageService.getBaseUrl() + "/profile/basic-profile.png");
-      member.setNickname("닉네임");
+      Member member = Member.create(
+          oauth2Username,
+          oAuth2Response.getEmail().split("@")[0],
+          oAuth2Response.getName(),
+          oAuth2Response.getEmail(),
+          "ROLE_USER",
+          storageService.getBaseUrl() + "/profile/basic-profile.png",
+          "닉네임"
+      );
 
       memberRepository.save(member);
 

@@ -94,7 +94,7 @@ public class MemberService {
         ImageType.PERSONAL, member.getUsername(), thumbnail, profileImage.getOriginalFilename(),
         profileImage.getContentType());
 
-    member.setProfileImageUrl(imageUrl);
+    member.updateProfileImage(imageUrl);
 
     return MemberMapper.toProfileUpdateResponse(imageUrl);
   }
