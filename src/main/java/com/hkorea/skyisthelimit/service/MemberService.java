@@ -1,5 +1,6 @@
 package com.hkorea.skyisthelimit.service;
 
+import com.hkorea.skyisthelimit.common.StorageService;
 import com.hkorea.skyisthelimit.common.exception.BusinessException;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
 import com.hkorea.skyisthelimit.common.utils.ImageUtils;
@@ -44,7 +45,7 @@ public class MemberService {
 
   private static final String BASIC_PROFILE_URL = "https://api.skyisthelimit.cloud/files/skyisthelimit/profile/basic-profile.png";
   private final MemberRepository memberRepository;
-  private final MinioService minioService;
+  private final StorageService storageService;
 
   @Transactional
   public MemberInfoResponse getMemberInfo(String username) {
@@ -79,7 +80,7 @@ public class MemberService {
 
     // 1. 기존 이미지 삭제
     if (!member.getProfileImageUrl().equals(BASIC_PROFILE_URL)) {
-      minioService.deleteOldImage(member.getProfileImageUrl());
+      storageService.deleteOldImage(member.getProfileImageUrl());
     }
 
     // 2. 이미지 검증
@@ -89,7 +90,7 @@ public class MemberService {
     byte[] thumbnail = ImageUtils.createThumbnail(profileImage);
 
     // 4. 파일 업로드
-    String imageUrl = minioService.uploadImage(
+    String imageUrl = storageService.uploadImage(
         ImageType.PERSONAL, member.getUsername(), thumbnail, profileImage.getOriginalFilename(),
         profileImage.getContentType());
 

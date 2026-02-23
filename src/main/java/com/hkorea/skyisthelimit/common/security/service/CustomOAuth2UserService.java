@@ -1,5 +1,6 @@
 package com.hkorea.skyisthelimit.common.security.service;
 
+import com.hkorea.skyisthelimit.common.StorageService;
 import com.hkorea.skyisthelimit.common.security.CustomOAuth2User;
 import com.hkorea.skyisthelimit.common.security.dto.UserDTO;
 import com.hkorea.skyisthelimit.common.security.oauth2.GoogleResponse;
@@ -19,9 +20,7 @@ import org.springframework.stereotype.Service;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
   private final MemberRepository memberRepository;
-
-  @Value("${minio.endpoint}")
-  private String minioEndpoint;
+  private final StorageService storageService;
 
 
   @Override
@@ -43,7 +42,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       member.setEmail(oAuth2Response.getEmail());
       member.setRole("ROLE_USER");
 
-      member.setProfileImageUrl(minioEndpoint + "/skyisthelimit/profile/basic-profile.png");
+      member.setProfileImageUrl(storageService.getBaseUrl() + "/profile/basic-profile.png");
       member.setNickname("닉네임");
 
       memberRepository.save(member);

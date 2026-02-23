@@ -1,5 +1,6 @@
 package com.hkorea.skyisthelimit.service;
 
+import com.hkorea.skyisthelimit.common.StorageService;
 import com.hkorea.skyisthelimit.common.exception.BusinessException;
 import com.hkorea.skyisthelimit.common.response.ErrorCode;
 import com.hkorea.skyisthelimit.common.utils.ImageUtils;
@@ -71,7 +72,7 @@ public class StudyService {
   private final MemberService memberService;
   private final QueryDSLHelper queryDSLService;
   private final ProblemService problemService;
-  private final MinioService minioService;
+  private final StorageService storageService;
 
   @Scheduled(cron = "0 0 0 * * ?")
   @Transactional
@@ -162,14 +163,14 @@ public class StudyService {
 
     // 1. 기존 이미지 삭제
     if (study.getThumbnailUrl() != null) {
-      minioService.deleteOldImage(study.getThumbnailUrl());
+      storageService.deleteOldImage(study.getThumbnailUrl());
     }
 
     ImageUtils.validateImage(studyProfileImage);
 
     byte[] thumbnail = ImageUtils.createThumbnail(studyProfileImage);
 
-    String imageUrl = minioService.uploadImage(
+    String imageUrl = storageService.uploadImage(
         ImageType.STUDY,
         Integer.toString(study.getId()),
         thumbnail,
@@ -241,7 +242,7 @@ public class StudyService {
 
     byte[] decodedBytes = Base64.decodeBase64(imageString);
 
-    return minioService.uploadImage(
+    return storageService.uploadImage(
         ImageType.STUDY,
         Integer.toString(study.getId()),
         decodedBytes,

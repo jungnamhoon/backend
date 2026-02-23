@@ -1,5 +1,6 @@
-package com.hkorea.skyisthelimit.service;
+package com.hkorea.skyisthelimit.common.infrastructure;
 
+import com.hkorea.skyisthelimit.common.StorageService;
 import com.hkorea.skyisthelimit.service.enums.ImageType;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MinioService {
+public class MinioService implements StorageService {
 
   private final MinioClient minioClient;
 
@@ -35,6 +36,7 @@ public class MinioService {
   @Value("${minio.endpoint}")
   private String minioEndpoint;
 
+  @Override
   @Transactional
   public void deleteOldImage(String oldUrl)
       throws ErrorResponseException, InsufficientDataException, InternalException,
@@ -54,6 +56,7 @@ public class MinioService {
     }
   }
 
+  @Override
   public String uploadImage(ImageType type, String identifier, byte[] imageData,
       String originalFilename, String contentType)
       throws ErrorResponseException, InsufficientDataException, InternalException,
@@ -77,6 +80,11 @@ public class MinioService {
     return minioEndpoint + "/" + bucketName + "/" + objectName;
   }
 
+  @Override
+  public String getBaseUrl() {
+    return minioEndpoint + "/" + bucketName;
+  }
+
   private boolean isHaveImage(String fileName) {
     try {
       minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(fileName).build());
@@ -85,6 +93,4 @@ public class MinioService {
       return false;
     }
   }
-
-
 }
